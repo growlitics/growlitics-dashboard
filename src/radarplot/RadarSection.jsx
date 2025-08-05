@@ -5,12 +5,23 @@ const RadarContext = createContext(null);
 
 const round1 = (n) => Math.round(n * 10) / 10;
 
+// Set up default visibility so that all strategies are shown initially
+const INITIAL_VISIBLE = Object.values(DEFAULT_STRATEGIES).reduce(
+  (acc, stratList) => {
+    stratList.forEach((s) => {
+      acc[s.name] = true;
+    });
+    return acc;
+  },
+  {}
+);
+
 export const RadarProvider = ({ children }) => {
   const [selectedCultivations, setSelectedCultivations] = useState(
     Object.keys(DEFAULT_STRATEGIES)
   );
   const [strategies, setStrategies] = useState([]);
-  const [visible, setVisible] = useState({});
+  const [visible, setVisible] = useState(INITIAL_VISIBLE);
 
   useEffect(() => {
     const strategyNames = new Set();
@@ -58,15 +69,6 @@ export const RadarProvider = ({ children }) => {
     setStrategies(averaged);
   }, [selectedCultivations]);
 
-  useEffect(() => {
-    setVisible((prev) => {
-      const vis = { ...prev };
-      strategies.forEach((st) => {
-        if (vis[st.name] === undefined) vis[st.name] = true;
-      });
-      return vis;
-    });
-  }, [strategies]);
 
   const colorMap = useMemo(() => {
     const palette = [
@@ -181,7 +183,7 @@ const RadarControls = () => {
       })}
       {strategies.map((s) => {
         const color = colorMap[s.name];
-        const isOn = visible[s.name];
+        const isOn = visible[s.name] !== false;
         return (
           <button
             key={s.name}
