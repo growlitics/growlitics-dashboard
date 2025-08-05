@@ -5,6 +5,7 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  ResponsiveContainer,
 } from "recharts";
 
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -94,14 +95,12 @@ const RadarPlot = ({
   }, [strategies]);
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <div className="mt-8 flex justify-center">
+    <div className="w-full h-full flex items-center justify-center">
+      <ResponsiveContainer width="100%" height="100%">
         <RadarChart
           cx="50%"
           cy="50%"
           outerRadius="80%"
-          width={250}
-          height={200}
           data={chartData}
           margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
         >
@@ -131,7 +130,7 @@ const RadarPlot = ({
               );
             })}
         </RadarChart>
-      </div>
+      </ResponsiveContainer>
     </div>
   );
 };
