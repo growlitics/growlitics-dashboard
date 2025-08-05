@@ -9,8 +9,8 @@ import {
 
 import { DEFAULT_STRATEGIES } from "./defaultStrategies";
 
+const OPTIMIZED_COLOR = "#FFD700";
 const COLOR_PALETTE = [
-  "#FFD700",
   "#2ca02c",
   "#d62728",
   "#1f77b4",
@@ -150,12 +150,15 @@ const RadarPlot = () => {
   }, [strategies]);
 
   const colorMap = useMemo(() => {
-    const sorted = [...strategies].sort(
-      (a, b) => (Number(b.profit) || 0) - (Number(a.profit) || 0)
-    );
     const map = {};
-    sorted.forEach((s, idx) => {
-      map[s.name] = COLOR_PALETTE[idx % COLOR_PALETTE.length];
+    let idx = 0;
+    strategies.forEach((s) => {
+      if (s.name === "Optimized") {
+        map[s.name] = OPTIMIZED_COLOR;
+      } else {
+        map[s.name] = COLOR_PALETTE[idx % COLOR_PALETTE.length];
+        idx += 1;
+      }
     });
     return map;
   }, [strategies]);
@@ -185,48 +188,50 @@ const RadarPlot = () => {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <div className="flex justify-center gap-2 flex-wrap">
-        {Object.keys(DEFAULT_STRATEGIES).map((c) => {
-          const isSelected = selectedCultivations.includes(c);
-          return (
-            <button
-              key={c}
-              type="button"
-              onClick={() => toggleCultivation(c)}
-              className={`px-3 py-1 rounded-full text-sm font-semibold border ${
-                isSelected
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "text-blue-500 border-blue-500"
-              }`}
-            >
-              {c}
-            </button>
-          );
-        })}
+    <div className="w-full h-full flex flex-col">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex flex-wrap gap-2">
+          {Object.keys(DEFAULT_STRATEGIES).map((c) => {
+            const isSelected = selectedCultivations.includes(c);
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => toggleCultivation(c)}
+                className={`px-3 py-1 rounded-full text-sm font-semibold border ${
+                  isSelected
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "text-blue-500 border-blue-500"
+                }`}
+              >
+                {c}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {strategies.map((s) => {
+            const color = colorMap[s.name];
+            const isOn = visible[s.name];
+            return (
+              <button
+                key={s.name}
+                type="button"
+                onClick={() => toggle(s.name)}
+                className="px-3 py-1 rounded-full text-sm font-semibold border"
+                style={{
+                  borderColor: color,
+                  backgroundColor: isOn ? color : "transparent",
+                  color: isOn ? "#000" : color,
+                }}
+              >
+                {s.name}
+              </button>
+            );
+          })}
+        </div>
       </div>
-      <div className="mt-6 flex justify-center gap-2 flex-wrap">
-        {strategies.map((s) => {
-          const color = colorMap[s.name];
-          const isOn = visible[s.name];
-          return (
-            <button
-              key={s.name}
-              type="button"
-              onClick={() => toggle(s.name)}
-              className="px-3 py-1 rounded-full text-sm font-semibold border"
-              style={{
-                borderColor: color,
-                backgroundColor: isOn ? color : "transparent",
-                color: isOn ? "#000" : color,
-              }}
-            >
-              {s.name}
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-8 flex justify-center">
+      <div className="flex-1 flex justify-center items-center">
         <RadarChart
           cx="50%"
           cy="50%"
