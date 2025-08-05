@@ -18,24 +18,47 @@ const RadarContext = createContext();
 
 export const useRadar = () => useContext(RadarContext);
 
-export const RadarProvider = ({ data, children }) => {
-  const baseData = data && Object.keys(data).length ? data : DEFAULT_STRATEGIES;
-  const cultivationKeys = Object.keys(baseData);
-  const defaultCultivations = cultivationKeys.slice(0, 2);
+const buildDefaultData = () => {
+  const cultivations = Object.keys(DEFAULT_STRATEGIES);
+  const strategiesSet = new Set();
+  const kpis = {};
+  cultivations.forEach((c) => {
+    (DEFAULT_STRATEGIES[c] || []).forEach((s) => {
+      strategiesSet.add(s.name);
+      kpis[`${c}|${s.name}`] = s;
+    });
+  });
+  return {
+    cultivations,
+    strategies: Array.from(strategiesSet),
+    kpis,
+  };
+};
+
+export const RadarProvider = ({ data = {}, children }) => {
+  const baseData = useMemo(() => {
+    return data && data.cultivations ? data : buildDefaultData();
+  }, [data]);
+
+  const allCultivations = baseData.cultivations || [];
+  const defaultCultivations = allCultivations.slice(0, 2);
   const [selectedCultivations, setSelectedCultivations] = useState(defaultCultivations);
   const [strategies, setStrategies] = useState([]);
   const [visible, setVisible] = useState({});
 
   // Reset selections when incoming data changes
   useEffect(() => {
-    setSelectedCultivations(defaultCultivations);
+    const defaults = (baseData.cultivations || []).slice(0, 2);
+    setSelectedCultivations(defaults);
     setVisible({});
-  }, [data]);
+  }, [baseData]);
 
   useEffect(() => {
     const strategyNames = new Set();
     selectedCultivations.forEach((c) => {
-      (baseData[c] || []).forEach((s) => strategyNames.add(s.name));
+      (baseData.strategies || []).forEach((s) => {
+        if (baseData.kpis && baseData.kpis[`${c}|${s}`]) strategyNames.add(s);
+      });
     });
     const averaged = Array.from(strategyNames).map((name) => {
       let count = 0;
@@ -47,7 +70,7 @@ export const RadarProvider = ({ data, children }) => {
       let base_revenue_b = 0;
       let base_revenue = 0;
       selectedCultivations.forEach((c) => {
-        const st = (baseData[c] || []).find((s) => s.name === name);
+        const st = baseData.kpis ? baseData.kpis[`${c}|${name}`] : undefined;
         if (st) {
           bonus_penalty += Number(st.bonus_penalty) || 0;
           profit += Number(st.profit) || 0;
@@ -115,7 +138,7 @@ export const RadarProvider = ({ data, children }) => {
     selectedCultivations,
     toggleStrategy,
     toggleCultivation,
-    allCultivations: cultivationKeys,
+    allCultivations,
   };
 
   return <RadarContext.Provider value={value}>{children}</RadarContext.Provider>;

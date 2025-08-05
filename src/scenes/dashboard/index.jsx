@@ -257,6 +257,18 @@ const Dashboard = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const gistId = params.get("gist");
+    const dataParam = params.get("data");
+
+    if (dataParam) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(dataParam));
+        setGistData(parsed);
+      } catch (err) {
+        console.error("Failed to parse data param", err);
+      }
+      return;
+    }
+
     if (!gistId) return;
 
     const fetchData = async () => {
