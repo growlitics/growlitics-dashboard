@@ -127,49 +127,48 @@ const RadarControls = () => {
   } = useRadar();
 
   return (
-    <div className="flex flex-wrap justify-center items-center gap-3">
-      {/* Cultivation Buttons */}
-      {allCultivations.map((c) => {
-        const isSelected = selectedCultivations.includes(c);
-        return (
-          <button
-            key={c}
-            type="button"
-            onClick={() => toggleCultivation(c)}
-            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
-              isSelected
-                ? "bg-blue-500 text-white border-blue-500"
-                : "text-blue-500 border-blue-500 hover:bg-blue-100"
-            }`}
-          >
-            {c}
-          </button>
-        );
-      })}
+    <div className="flex flex-wrap justify-center items-start gap-8 mt-2">
+      {/* Cultivation Button Group */}
+      <div className="flex flex-wrap gap-2">
+        {allCultivations.map((c) => {
+          const isSelected = selectedCultivations.includes(c);
+          return (
+            <button
+              key={c}
+              onClick={() => toggleCultivation(c)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
+                isSelected
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "text-blue-500 border-blue-500 hover:bg-blue-100"
+              }`}
+            >
+              {c}
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Spacer between groups */}
-      <div key="spacer" style={{ width: "20px" }} />
-
-      {/* Strategy Buttons */}
-      {strategies.map((s) => {
-        const color = colorMap[s.name];
-        const isOn = visible[s.name];
-        return (
-          <button
-            key={s.name}
-            type="button"
-            onClick={() => toggleStrategy(s.name)}
-            className="px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out"
-            style={{
-              borderColor: color,
-              backgroundColor: isOn ? color : "transparent",
-              color: isOn ? "#000" : color,
-            }}
-          >
-            {s.name}
-          </button>
-        );
-      })}
+      {/* Strategy Button Group */}
+      <div className="flex flex-wrap gap-2">
+        {strategies.map((s) => {
+          const color = colorMap[s.name];
+          const isOn = visible[s.name];
+          return (
+            <button
+              key={s.name}
+              onClick={() => toggleStrategy(s.name)}
+              className="px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out"
+              style={{
+                borderColor: color,
+                backgroundColor: isOn ? color : "transparent",
+                color: isOn ? "#000" : color,
+              }}
+            >
+              {s.name}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
