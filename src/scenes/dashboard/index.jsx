@@ -12,40 +12,62 @@ import GeographyChart from "../../components/GeographyChart";
 import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
+import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarSection";
 
 const Dashboard = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const RadarChartWrapper = () => {
+    const { chartData, strategies, visible, colorMap } = useRadar();
+    const visibleStrategies = strategies.filter((s) => visible[s.name]);
+    return (
+      <RadarPlot
+        chartData={chartData}
+        visibleStrategies={visibleStrategies}
+        colorMap={colorMap}
+      />
+    );
+  };
+
   return (
-    <Box m="20px">
-      {/* HEADER */}
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+    <RadarProvider>
+      <Box m="20px">
+        {/* HEADER */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          className="flex flex-wrap gap-4"
+        >
+          <div className="flex items-center flex-wrap gap-4">
+            <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+            <RadarControls />
+          </div>
 
-        <Box>
-          <Button
-            sx={{
-              backgroundColor: colors.blueAccent[700],
-              color: colors.grey[100],
-              fontSize: "14px",
-              fontWeight: "bold",
-              padding: "10px 20px",
-            }}
-          >
-            <DownloadOutlinedIcon sx={{ mr: "10px" }} />
-            Download Reports
-          </Button>
+          <Box>
+            <Button
+              sx={{
+                backgroundColor: colors.blueAccent[700],
+                color: colors.grey[100],
+                fontSize: "14px",
+                fontWeight: "bold",
+                padding: "10px 20px",
+              }}
+            >
+              <DownloadOutlinedIcon sx={{ mr: "10px" }} />
+              Download Reports
+            </Button>
+          </Box>
         </Box>
-      </Box>
 
-      {/* GRID & CHARTS */}
-      <Box
-        display="grid"
-        gridTemplateColumns="repeat(12, 1fr)"
-        gridAutoRows="140px"
-        gap="20px"
-      >
+        {/* GRID & CHARTS */}
+        <Box
+          display="grid"
+          gridTemplateColumns="repeat(12, 1fr)"
+          gridAutoRows="140px"
+          gap="20px"
+        >
         {/* ROW 1 */}
         <Box
           gridColumn="span 3"
@@ -223,9 +245,9 @@ const Dashboard = () => {
           backgroundColor={colors.primary[400]}
           p="30px"
         >
-          <Box height="300px">
-            <RadarPlot />
-          </Box>
+          <div className="w-full h-full flex items-center justify-center">
+            <RadarChartWrapper />
+          </div>
         </Box>
         <Box
           gridColumn="span 4"
@@ -261,7 +283,8 @@ const Dashboard = () => {
           </Box>
         </Box>
       </Box>
-    </Box>
+      </Box>
+    </RadarProvider>
   );
 };
 
