@@ -11,7 +11,7 @@ import LineChart from "../../components/LineChart";
 import GeographyChart from "../../components/GeographyChart";
 import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
-import ProgressCircle from "../../components/ProgressCircle";
+import RadarPlot from "../../radarplot/RadarPlot";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -223,24 +223,8 @@ const Dashboard = () => {
           backgroundColor={colors.primary[400]}
           p="30px"
         >
-          <Typography variant="h5" fontWeight="600">
-            Campaign
-          </Typography>
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            mt="25px"
-          >
-            <ProgressCircle size="125" />
-            <Typography
-              variant="h5"
-              color={colors.greenAccent[500]}
-              sx={{ mt: "15px" }}
-            >
-              $48,352 revenue generated
-            </Typography>
-            <Typography>Includes extra misc expenditures and costs</Typography>
+          <Box height="300px">
+            <RadarPlot />
           </Box>
         </Box>
         <Box

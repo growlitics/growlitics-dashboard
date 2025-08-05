@@ -1,6 +1,4 @@
-import type { StrategiesByCultivation } from './types';
-
-export const DEFAULT_STRATEGIES: StrategiesByCultivation = {
+export const DEFAULT_STRATEGIES = {
   '2024-5, Vak 11, Serenity': [
     {
       name: 'Default',
