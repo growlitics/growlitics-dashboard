@@ -127,60 +127,48 @@ const RadarControls = () => {
   } = useRadar();
 
   return (
-    <div className="flex flex-col items-start gap-6 mt-4">
-      {/* Cultivations */}
-      <div>
-        <span className="text-sm text-green-400 font-medium mb-1 block">
-          🌱 Cultivations:
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {allCultivations.map((c) => {
-            const isSelected = selectedCultivations.includes(c);
-            return (
-              <button
-                key={c}
-                onClick={() => toggleCultivation(c)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
-                  isSelected
-                    ? "bg-white text-black border-gray-300"
-                    : "bg-transparent text-white border-white hover:bg-white hover:text-black"
-                }`}
-              >
-                {c}
-              </button>
-            );
-          })}
-        </div>
+    <div className="flex flex-wrap justify-start items-center gap-12 mt-4">
+      {/* Cultivation Section */}
+      <div className="flex flex-wrap gap-3">
+        {allCultivations.map((c) => {
+          const isSelected = selectedCultivations.includes(c);
+          return (
+            <button
+              key={c}
+              onClick={() => toggleCultivation(c)}
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
+                isSelected
+                  ? "bg-white text-black border-gray-300"
+                  : "bg-transparent text-white border-white hover:bg-white hover:text-black"
+              }`}
+            >
+              {c}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Strategies */}
-      <div>
-        <span className="text-sm text-yellow-400 font-medium mb-1 block">
-          ⭐ Strategies:
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {strategies.map((s) => {
-            const isOn = visible[s.name];
-            const color =
-              s.name.toLowerCase().includes("optimized")
-                ? "bg-yellow-400 text-black border-yellow-400"
-                : s.name.toLowerCase().includes("default")
-                ? "bg-white text-black border-gray-400"
-                : "bg-transparent text-white border-white hover:bg-white hover:text-black";
+      {/* Strategy Section */}
+      <div className="flex flex-wrap gap-3">
+        {strategies.map((s) => {
+          const isVisible = visible[s.name];
+          const color = colorMap[s.name] || "#ccc";
 
-            return (
-              <button
-                key={s.name}
-                onClick={() => toggleStrategy(s.name)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
-                  isOn ? color : "bg-transparent text-white border-white hover:bg-white hover:text-black"
-                }`}
-              >
-                {s.name}
-              </button>
-            );
-          })}
-        </div>
+          return (
+            <button
+              key={s.name}
+              onClick={() => toggleStrategy(s.name)}
+              className="px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out"
+              style={{
+                borderColor: color,
+                backgroundColor: isVisible ? color : "transparent",
+                color: isVisible ? "#000" : color,
+              }}
+            >
+              {s.name}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
