@@ -8,7 +8,6 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import TrafficIcon from "@mui/icons-material/Traffic";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
-import GeographyChart from "../../components/GeographyChart";
 import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
@@ -223,17 +222,7 @@ const DashboardContent = () => {
 
         {/* ROW 3 */}
         <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          p="30px"
-        >
-          <Box height="300px">
-            <RadarPlot {...radar} />
-          </Box>
-        </Box>
-        <Box
-          gridColumn="span 4"
+          gridColumn="5 / span 4"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
         >
@@ -249,20 +238,13 @@ const DashboardContent = () => {
           </Box>
         </Box>
         <Box
-          gridColumn="span 4"
+          gridColumn="9 / span 4"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
-          padding="30px"
+          p="30px"
         >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ marginBottom: "15px" }}
-          >
-            Geography Based Traffic
-          </Typography>
-          <Box height="200px">
-            <GeographyChart isDashboard={true} />
+          <Box height="300px">
+            <RadarPlot {...radar} />
           </Box>
         </Box>
       </Box>
