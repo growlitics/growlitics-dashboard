@@ -14,72 +14,6 @@ const COLOR_PALETTE = [
   "#17becf",
 ];
 
-const COLOR_BUTTON_CLASSES = [
-  {
-    border: "border-yellow-500",
-    text: "text-yellow-500",
-    hover: "hover:bg-yellow-500 hover:text-black",
-    selected: "bg-yellow-500 text-black",
-  },
-  {
-    border: "border-green-500",
-    text: "text-green-500",
-    hover: "hover:bg-green-500 hover:text-black",
-    selected: "bg-green-500 text-black",
-  },
-  {
-    border: "border-red-500",
-    text: "text-red-500",
-    hover: "hover:bg-red-500 hover:text-white",
-    selected: "bg-red-500 text-white",
-  },
-  {
-    border: "border-blue-500",
-    text: "text-blue-500",
-    hover: "hover:bg-blue-500 hover:text-white",
-    selected: "bg-blue-500 text-white",
-  },
-  {
-    border: "border-orange-500",
-    text: "text-orange-500",
-    hover: "hover:bg-orange-500 hover:text-black",
-    selected: "bg-orange-500 text-black",
-  },
-  {
-    border: "border-purple-500",
-    text: "text-purple-500",
-    hover: "hover:bg-purple-500 hover:text-white",
-    selected: "bg-purple-500 text-white",
-  },
-  {
-    border: "border-pink-500",
-    text: "text-pink-500",
-    hover: "hover:bg-pink-500 hover:text-white",
-    selected: "bg-pink-500 text-white",
-  },
-  {
-    border: "border-gray-500",
-    text: "text-gray-500",
-    hover: "hover:bg-gray-500 hover:text-white",
-    selected: "bg-gray-500 text-white",
-  },
-  {
-    border: "border-teal-500",
-    text: "text-teal-500",
-    hover: "hover:bg-teal-500 hover:text-black",
-    selected: "bg-teal-500 text-black",
-  },
-  {
-    border: "border-cyan-500",
-    text: "text-cyan-500",
-    hover: "hover:bg-cyan-500 hover:text-black",
-    selected: "bg-cyan-500 text-black",
-  },
-];
-
-const BUTTON_BASE_CLASS =
-  "rounded-full px-3 py-1 text-sm font-medium border transition-colors";
-
 const RadarContext = createContext();
 
 export const useRadar = () => useContext(RadarContext);
@@ -191,43 +125,49 @@ const RadarControls = () => {
     toggleStrategy,
     toggleCultivation,
   } = useRadar();
+
   return (
-    <div className="flex flex-wrap justify-end gap-2">
-      {allCultivations.map((c) => {
-        const isSelected = selectedCultivations.includes(c);
-        return (
-          <button
-            key={c}
-            type="button"
-            onClick={() => toggleCultivation(c)}
-            className={`${BUTTON_BASE_CLASS} border-blue-500 ${
-              isSelected
-                ? "bg-blue-500 text-white"
-                : "text-blue-500 hover:bg-blue-500 hover:text-white"
-            }`}
-          >
-            {c}
-          </button>
-        );
-      })}
-      {strategies.map((s) => {
-        const color = colorMap[s.name];
-        const colorIdx = COLOR_PALETTE.indexOf(color);
-        const cls = COLOR_BUTTON_CLASSES[colorIdx % COLOR_BUTTON_CLASSES.length];
-        const isOn = visible[s.name];
-        return (
-          <button
-            key={s.name}
-            type="button"
-            onClick={() => toggleStrategy(s.name)}
-            className={`${BUTTON_BASE_CLASS} ${cls.border} ${
-              isOn ? cls.selected : `${cls.text} ${cls.hover}`
-            }`}
-          >
-            {s.name}
-          </button>
-        );
-      })}
+    <div className="flex flex-col">
+      <div className="flex justify-center gap-2 flex-wrap">
+        {allCultivations.map((c) => {
+          const isSelected = selectedCultivations.includes(c);
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => toggleCultivation(c)}
+              className={`px-3 py-1 rounded-full text-sm font-semibold border ${
+                isSelected
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "text-blue-500 border-blue-500"
+              }`}
+            >
+              {c}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-6 flex justify-center gap-2 flex-wrap">
+        {strategies.map((s) => {
+          const color = colorMap[s.name];
+          const isOn = visible[s.name];
+          return (
+            <button
+              key={s.name}
+              type="button"
+              onClick={() => toggleStrategy(s.name)}
+              className="px-3 py-1 rounded-full text-sm font-semibold border"
+              style={{
+                borderColor: color,
+                backgroundColor: isOn ? color : "transparent",
+                color: isOn ? "#000" : color,
+              }}
+            >
+              {s.name}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
