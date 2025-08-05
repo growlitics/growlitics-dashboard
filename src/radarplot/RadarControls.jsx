@@ -127,54 +127,48 @@ const RadarControls = () => {
   } = useRadar();
 
   return (
-    <div className="flex flex-wrap justify-center items-center gap-6">
+    <div className="flex flex-wrap justify-center gap-3">
       {/* Cultivation Buttons */}
-      <div className="flex flex-wrap gap-3">
-        {allCultivations.map((c) => {
-          const isSelected = selectedCultivations.includes(c);
-          return (
-            <button
-              key={c}
-              type="button"
-              onClick={() => toggleCultivation(c)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
-                isSelected
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "text-blue-500 border-blue-500 hover:bg-blue-100"
-              }`}
-            >
-              {c}
-            </button>
-          );
-        })}
-      </div>
+      {allCultivations.map((c) => {
+        const isSelected = selectedCultivations.includes(c);
+        return (
+          <button
+            key={c}
+            type="button"
+            onClick={() => toggleCultivation(c)}
+            className={px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
+              isSelected
+                ? "bg-blue-500 text-white border-blue-500"
+                : "text-blue-500 border-blue-500 hover:bg-blue-100"
+            }}
+          >
+            {c}
+          </button>
+        );
+      })}
 
       {/* Strategy Buttons */}
-      <div className="flex flex-wrap gap-3">
-        {strategies.map((s) => {
-          const color = colorMap[s.name];
-          const isOn = visible[s.name];
-          return (
-            <button
-              key={s.name}
-              type="button"
-              onClick={() => toggleStrategy(s.name)}
-              className="px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out"
-              style={{
-                borderColor: color,
-                backgroundColor: isOn ? color : "transparent",
-                color: isOn ? "#000" : color,
-              }}
-            >
-              {s.name}
-            </button>
-          );
-        })}
-      </div>
+      {strategies.map((s) => {
+        const color = colorMap[s.name];
+        const isOn = visible[s.name];
+        return (
+          <button
+            key={s.name}
+            type="button"
+            onClick={() => toggleStrategy(s.name)}
+            className="px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out"
+            style={{
+              borderColor: color,
+              backgroundColor: isOn ? color : "transparent",
+              color: isOn ? "#000" : color,
+            }}
+          >
+            {s.name}
+          </button>
+        );
+      })}
     </div>
   );
 };
 
-
 export default RadarControls;
-
