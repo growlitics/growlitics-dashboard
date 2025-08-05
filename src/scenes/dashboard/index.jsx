@@ -12,16 +12,21 @@ import GeographyChart from "../../components/GeographyChart";
 import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
+import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 
-const Dashboard = () => {
+const DashboardContent = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const radar = useRadar();
 
   return (
     <Box m="20px">
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+        <Box display="flex" alignItems="center" gap="20px">
+          <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+          <RadarControls />
+        </Box>
 
         <Box>
           <Button
@@ -224,7 +229,7 @@ const Dashboard = () => {
           p="30px"
         >
           <Box height="300px">
-            <RadarPlot />
+            <RadarPlot {...radar} />
           </Box>
         </Box>
         <Box
@@ -264,5 +269,11 @@ const Dashboard = () => {
     </Box>
   );
 };
+
+const Dashboard = () => (
+  <RadarProvider>
+    <DashboardContent />
+  </RadarProvider>
+);
 
 export default Dashboard;
