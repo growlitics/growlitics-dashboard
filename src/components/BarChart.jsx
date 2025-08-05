@@ -1,10 +1,7 @@
 import { useTheme } from "@mui/material";
 import { ResponsiveBar } from "@nivo/bar";
 import { tokens } from "../theme";
-let data = [];
-if (process.env.NODE_ENV !== "production") {
-  data = require("../data/mockData").mockBarData;
-}
+import { mockBarData as data } from "../data/mockData";
 
 const BarChart = ({ isDashboard = false }) => {
   const theme = useTheme();

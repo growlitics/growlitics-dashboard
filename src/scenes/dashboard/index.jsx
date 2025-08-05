@@ -1,6 +1,7 @@
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { tokens } from "../../theme";
+import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import EmailIcon from "@mui/icons-material/Email";
 import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
@@ -13,7 +14,7 @@ import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 
-const DashboardContent = ({ transactions = [] }) => {
+const DashboardContent = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const radar = useRadar();
@@ -187,7 +188,7 @@ const DashboardContent = ({ transactions = [] }) => {
               Recent Transactions
             </Typography>
           </Box>
-          {transactions.map((transaction, i) => (
+          {mockTransactions.map((transaction, i) => (
             <Box
               key={`${transaction.txId}-${i}`}
               display="flex"
@@ -252,7 +253,6 @@ const DashboardContent = ({ transactions = [] }) => {
 
 const Dashboard = () => {
   const [gistData, setGistData] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -272,7 +272,6 @@ const Dashboard = () => {
     if (!gistId) return;
 
     const fetchData = async () => {
-      setLoading(true);
       try {
         const res = await fetch(`https://api.github.com/gists/${gistId}`);
         const json = await res.json();
@@ -288,25 +287,15 @@ const Dashboard = () => {
         }
       } catch (err) {
         console.error("Failed to fetch gist", err);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  if (loading) {
-    return <div className="p-4 text-center">Loading...</div>;
-  }
-
-  if (!gistData) {
-    return <div className="p-4 text-center">No data loaded</div>;
-  }
-
   return (
     <RadarProvider data={gistData}>
-      <DashboardContent transactions={gistData.transactions || []} />
+      <DashboardContent />
     </RadarProvider>
   );
 };

@@ -1,10 +1,7 @@
 import { ResponsiveLine } from "@nivo/line";
 import { useTheme } from "@mui/material";
 import { tokens } from "../theme";
-let data = [];
-if (process.env.NODE_ENV !== "production") {
-  data = require("../data/mockData").mockLineData;
-}
+import { mockLineData as data } from "../data/mockData";
 
 const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
   const theme = useTheme();

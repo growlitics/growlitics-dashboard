@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { DEFAULT_STRATEGIES } from "./defaultStrategies";
 
 const COLOR_PALETTE = [
   "#FFD700",
@@ -17,8 +18,29 @@ const RadarContext = createContext();
 
 export const useRadar = () => useContext(RadarContext);
 
+const buildDefaultData = () => {
+  const cultivations = Object.keys(DEFAULT_STRATEGIES);
+  const strategiesSet = new Set();
+  const kpis = {};
+  cultivations.forEach((c) => {
+    (DEFAULT_STRATEGIES[c] || []).forEach((s) => {
+      strategiesSet.add(s.name);
+      kpis[`${c}|${s.name}`] = s;
+    });
+  });
+  return {
+    cultivations,
+    strategies: Array.from(strategiesSet),
+    kpis,
+  };
+};
+
 export const RadarProvider = ({ data = {}, children }) => {
-  const allCultivations = data.cultivations || [];
+  const baseData = useMemo(() => {
+    return data && data.cultivations ? data : buildDefaultData();
+  }, [data]);
+
+  const allCultivations = baseData.cultivations || [];
   const defaultCultivations = allCultivations.slice(0, 2);
   const [selectedCultivations, setSelectedCultivations] = useState(defaultCultivations);
   const [strategies, setStrategies] = useState([]);
@@ -26,16 +48,16 @@ export const RadarProvider = ({ data = {}, children }) => {
 
   // Reset selections when incoming data changes
   useEffect(() => {
-    const defaults = (data.cultivations || []).slice(0, 2);
+    const defaults = (baseData.cultivations || []).slice(0, 2);
     setSelectedCultivations(defaults);
     setVisible({});
-  }, [data]);
+  }, [baseData]);
 
   useEffect(() => {
     const strategyNames = new Set();
     selectedCultivations.forEach((c) => {
-      (data.strategies || []).forEach((s) => {
-        if (data.kpis && data.kpis[`${c}|${s}`]) strategyNames.add(s);
+      (baseData.strategies || []).forEach((s) => {
+        if (baseData.kpis && baseData.kpis[`${c}|${s}`]) strategyNames.add(s);
       });
     });
     const averaged = Array.from(strategyNames).map((name) => {
@@ -48,7 +70,7 @@ export const RadarProvider = ({ data = {}, children }) => {
       let base_revenue_b = 0;
       let base_revenue = 0;
       selectedCultivations.forEach((c) => {
-        const st = data.kpis ? data.kpis[`${c}|${name}`] : undefined;
+        const st = baseData.kpis ? baseData.kpis[`${c}|${name}`] : undefined;
         if (st) {
           bonus_penalty += Number(st.bonus_penalty) || 0;
           profit += Number(st.profit) || 0;
@@ -76,7 +98,7 @@ export const RadarProvider = ({ data = {}, children }) => {
       };
     });
     setStrategies(averaged);
-  }, [selectedCultivations, data]);
+  }, [selectedCultivations, baseData]);
 
   useEffect(() => {
     setVisible((prev) => {

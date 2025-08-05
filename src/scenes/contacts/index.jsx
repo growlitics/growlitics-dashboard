@@ -1,13 +1,9 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
+import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
-
-let rows = [];
-if (process.env.NODE_ENV !== "production") {
-  rows = require("../../data/mockData").mockDataContacts;
-}
 
 const Contacts = () => {
   const theme = useTheme();
@@ -95,7 +91,7 @@ const Contacts = () => {
         }}
       >
         <DataGrid
-          rows={rows}
+          rows={mockDataContacts}
           columns={columns}
           components={{ Toolbar: GridToolbar }}
         />
