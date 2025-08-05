@@ -241,11 +241,9 @@ const DashboardContent = () => {
           gridColumn="9 / span 4"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
-          p="30px"
+          className="w-full h-full p-4"
         >
-          <Box height="300px">
-            <RadarPlot {...radar} />
-          </Box>
+          <RadarPlot {...radar} />
         </Box>
       </Box>
     </Box>
