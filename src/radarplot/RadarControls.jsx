@@ -14,6 +14,49 @@ const COLOR_PALETTE = [
   "#17becf",
 ];
 
+const COLOR_BUTTON_CLASSES = {
+  "#FFD700": {
+    on: "bg-[#FFD700] text-black border-[#FFD700]",
+    off: "text-[#FFD700] hover:bg-[#FFD700]/10 border-[#FFD700]",
+  },
+  "#2ca02c": {
+    on: "bg-[#2ca02c] text-black border-[#2ca02c]",
+    off: "text-[#2ca02c] hover:bg-[#2ca02c]/10 border-[#2ca02c]",
+  },
+  "#d62728": {
+    on: "bg-[#d62728] text-black border-[#d62728]",
+    off: "text-[#d62728] hover:bg-[#d62728]/10 border-[#d62728]",
+  },
+  "#1f77b4": {
+    on: "bg-[#1f77b4] text-black border-[#1f77b4]",
+    off: "text-[#1f77b4] hover:bg-[#1f77b4]/10 border-[#1f77b4]",
+  },
+  "#ff7f0e": {
+    on: "bg-[#ff7f0e] text-black border-[#ff7f0e]",
+    off: "text-[#ff7f0e] hover:bg-[#ff7f0e]/10 border-[#ff7f0e]",
+  },
+  "#9467bd": {
+    on: "bg-[#9467bd] text-black border-[#9467bd]",
+    off: "text-[#9467bd] hover:bg-[#9467bd]/10 border-[#9467bd]",
+  },
+  "#8c564b": {
+    on: "bg-[#8c564b] text-black border-[#8c564b]",
+    off: "text-[#8c564b] hover:bg-[#8c564b]/10 border-[#8c564b]",
+  },
+  "#e377c2": {
+    on: "bg-[#e377c2] text-black border-[#e377c2]",
+    off: "text-[#e377c2] hover:bg-[#e377c2]/10 border-[#e377c2]",
+  },
+  "#7f7f7f": {
+    on: "bg-[#7f7f7f] text-black border-[#7f7f7f]",
+    off: "text-[#7f7f7f] hover:bg-[#7f7f7f]/10 border-[#7f7f7f]",
+  },
+  "#17becf": {
+    on: "bg-[#17becf] text-black border-[#17becf]",
+    off: "text-[#17becf] hover:bg-[#17becf]/10 border-[#17becf]",
+  },
+};
+
 const RadarContext = createContext();
 
 export const useRadar = () => useContext(RadarContext);
@@ -126,9 +169,12 @@ const RadarControls = () => {
     toggleCultivation,
   } = useRadar();
 
+  const baseClass =
+    "px-3 py-1 rounded-full text-sm font-medium border transition-colors";
+
   return (
-    <div className="flex flex-col">
-      <div className="flex justify-center gap-2 flex-wrap">
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
         {allCultivations.map((c) => {
           const isSelected = selectedCultivations.includes(c);
           return (
@@ -136,10 +182,10 @@ const RadarControls = () => {
               key={c}
               type="button"
               onClick={() => toggleCultivation(c)}
-              className={`px-3 py-1 rounded-full text-sm font-semibold border ${
+              className={`${baseClass} border-blue-500 ${
                 isSelected
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "text-blue-500 border-blue-500"
+                  ? "bg-blue-500 text-white"
+                  : "text-blue-500 hover:bg-blue-100"
               }`}
             >
               {c}
@@ -147,21 +193,19 @@ const RadarControls = () => {
           );
         })}
       </div>
-      <div className="mt-6 flex justify-center gap-2 flex-wrap">
+      <div className="flex flex-wrap justify-end gap-2">
         {strategies.map((s) => {
-          const color = colorMap[s.name];
           const isOn = visible[s.name];
+          const color = colorMap[s.name];
+          const colorClasses = COLOR_BUTTON_CLASSES[color] || {};
           return (
             <button
               key={s.name}
               type="button"
               onClick={() => toggleStrategy(s.name)}
-              className="px-3 py-1 rounded-full text-sm font-semibold border"
-              style={{
-                borderColor: color,
-                backgroundColor: isOn ? color : "transparent",
-                color: isOn ? "#000" : color,
-              }}
+              className={`${baseClass} ${
+                isOn ? colorClasses.on : colorClasses.off
+              }`}
             >
               {s.name}
             </button>
