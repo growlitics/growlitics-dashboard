@@ -127,9 +127,9 @@ const RadarControls = () => {
   } = useRadar();
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-6">
+    <div className="flex flex-wrap justify-center items-center gap-6">
       {/* Cultivation Buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {allCultivations.map((c) => {
           const isSelected = selectedCultivations.includes(c);
           return (
@@ -150,7 +150,7 @@ const RadarControls = () => {
       </div>
 
       {/* Strategy Buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {strategies.map((s) => {
           const color = colorMap[s.name];
           const isOn = visible[s.name];
@@ -174,6 +174,7 @@ const RadarControls = () => {
     </div>
   );
 };
+
 
 export default RadarControls;
 
