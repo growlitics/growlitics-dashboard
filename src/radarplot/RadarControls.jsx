@@ -26,6 +26,12 @@ export const RadarProvider = ({ data, children }) => {
   const [strategies, setStrategies] = useState([]);
   const [visible, setVisible] = useState({});
 
+  // Reset selections when incoming data changes
+  useEffect(() => {
+    setSelectedCultivations(defaultCultivations);
+    setVisible({});
+  }, [data]);
+
   useEffect(() => {
     const strategyNames = new Set();
     selectedCultivations.forEach((c) => {

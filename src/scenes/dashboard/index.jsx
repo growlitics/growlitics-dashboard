@@ -1,4 +1,5 @@
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
+import { useEffect, useState } from "react";
 import { tokens } from "../../theme";
 import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
@@ -250,10 +251,41 @@ const DashboardContent = () => {
   );
 };
 
-const Dashboard = () => (
-  <RadarProvider>
-    <DashboardContent />
-  </RadarProvider>
-);
+const Dashboard = () => {
+  const [gistData, setGistData] = useState(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const gistId = params.get("gist");
+    if (!gistId) return;
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`https://api.github.com/gists/${gistId}`);
+        const json = await res.json();
+        const files = json.files || {};
+        const firstFile = Object.values(files)[0];
+        if (firstFile && firstFile.content) {
+          try {
+            const parsed = JSON.parse(firstFile.content);
+            setGistData(parsed);
+          } catch (err) {
+            console.error("Failed to parse gist JSON", err);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch gist", err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <RadarProvider data={gistData}>
+      <DashboardContent />
+    </RadarProvider>
+  );
+};
 
 export default Dashboard;
