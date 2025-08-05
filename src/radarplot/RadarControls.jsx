@@ -127,9 +127,10 @@ const RadarControls = () => {
   } = useRadar();
 
   return (
-    <div className="flex flex-wrap justify-center items-start gap-8 mt-2">
+    <div className="flex flex-wrap justify-center items-center gap-6 mt-2">
       {/* Cultivation Button Group */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-xs text-gray-400 mr-2">🌱 Cultivations:</span>
         {allCultivations.map((c) => {
           const isSelected = selectedCultivations.includes(c);
           return (
@@ -138,8 +139,8 @@ const RadarControls = () => {
               onClick={() => toggleCultivation(c)}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition duration-150 ease-in-out ${
                 isSelected
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "text-blue-500 border-blue-500 hover:bg-blue-100"
+                  ? "bg-green-500 text-white border-green-500"
+                  : "text-green-500 border-green-500 hover:bg-green-100"
               }`}
             >
               {c}
@@ -149,9 +150,10 @@ const RadarControls = () => {
       </div>
 
       {/* Strategy Button Group */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-xs text-gray-400 mr-2">⭐ Strategies:</span>
         {strategies.map((s) => {
-          const color = colorMap[s.name];
+          const color = colorMap[s.name] || "#999";
           const isOn = visible[s.name];
           return (
             <button
