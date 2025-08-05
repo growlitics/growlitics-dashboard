@@ -23,7 +23,7 @@ const DashboardContent = () => {
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Box display="flex" alignItems="center" gap="20px">
-          <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+          <Header title="GROWLITICS" subtitle="Welcome to your dashboard" />
           <RadarControls />
         </Box>
 
