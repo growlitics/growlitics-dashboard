@@ -20,10 +20,7 @@ const Dashboard = () => {
 
   const RadarChartWrapper = () => {
     const { chartData, strategies, visible, colorMap } = useRadar();
-    // Treat undefined visibility as true so strategies show by default
-    const visibleStrategies = strategies.filter(
-      (s) => visible[s.name] !== false
-    );
+    const visibleStrategies = strategies.filter((s) => visible[s.name]);
     return (
       <RadarPlot
         chartData={chartData}
@@ -44,11 +41,7 @@ const Dashboard = () => {
           className="flex flex-wrap gap-4"
         >
           <div className="flex items-center flex-wrap gap-4">
-            <Header
-              title="DASHBOARD"
-              subtitle="Welcome to your dashboard"
-              mb="0"
-            />
+            <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
             <RadarControls />
           </div>
 
