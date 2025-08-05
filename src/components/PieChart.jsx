@@ -1,7 +1,10 @@
 import { ResponsivePie } from "@nivo/pie";
 import { tokens } from "../theme";
 import { useTheme } from "@mui/material";
-import { mockPieData as data } from "../data/mockData";
+let data = [];
+if (process.env.NODE_ENV !== "production") {
+  data = require("../data/mockData").mockPieData;
+}
 
 const PieChart = () => {
   const theme = useTheme();

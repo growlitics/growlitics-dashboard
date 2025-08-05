@@ -1,8 +1,12 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { mockDataInvoices } from "../../data/mockData";
 import Header from "../../components/Header";
+
+let rows = [];
+if (process.env.NODE_ENV !== "production") {
+  rows = require("../../data/mockData").mockDataInvoices;
+}
 
 const Invoices = () => {
   const theme = useTheme();
@@ -74,7 +78,7 @@ const Invoices = () => {
           },
         }}
       >
-        <DataGrid checkboxSelection rows={mockDataInvoices} columns={columns} />
+        <DataGrid checkboxSelection rows={rows} columns={columns} />
       </Box>
     </Box>
   );
