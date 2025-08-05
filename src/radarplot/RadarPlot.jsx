@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Radar,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  ResponsiveContainer,
 } from "recharts";
 
 import { DEFAULT_STRATEGIES } from "./defaultStrategies";
@@ -22,30 +23,6 @@ const COLOR_PALETTE = [
   "#17becf",
 ];
 
-const round1 = (n) => Math.round(n * 10) / 10;
-
-function renderActiveDot(color, name) {
-  return (props) => {
-    const { cx, cy, payload } = props;
-    const raw = round1(payload[`${name}-raw`]);
-    return (
-      <g>
-        <circle cx={cx} cy={cy} r={4} stroke={color} strokeWidth={2} fill="#fff" />
-        <text
-          x={cx}
-          y={Number(cy) - 8}
-          textAnchor="middle"
-          fill={color}
-          fontSize={12}
-          fontWeight="bold"
-        >
-          {raw}
-        </text>
-      </g>
-    );
-  };
-}
-
 const KPI_FIELDS = [
   { key: "bonus_penalty", label: "Bonus/Penalty" },
   { key: "profit", label: "Profit" },
@@ -61,6 +38,8 @@ const KPI_RANGES = {
   bonus_penalty: [-3, 5],
   base_revenue: [0, 35],
 };
+
+const round1 = (n) => Math.round(n * 10) / 10;
 
 const renderAngleTick = (props) => {
   const { payload, x = 0, y = 0, cx = 0, cy = 0 } = props;
@@ -86,68 +65,36 @@ const renderAngleTick = (props) => {
   );
 };
 
-const RadarPlot = () => {
-  const [selectedCultivations, setSelectedCultivations] = useState(
-    Object.keys(DEFAULT_STRATEGIES)
+const renderActiveDot = (color) => (props) => {
+  const { cx, cy, payload } = props;
+  const raw = round1(payload.raw);
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={4} stroke={color} strokeWidth={2} fill="#fff" />
+      <text
+        x={cx}
+        y={Number(cy) - 8}
+        textAnchor="middle"
+        fill={color}
+        fontSize={12}
+        fontWeight="bold"
+      >
+        {raw}
+      </text>
+    </g>
   );
-  const [strategies, setStrategies] = useState([]);
-  const [visible, setVisible] = useState({});
+};
 
-  useEffect(() => {
-    const strategyNames = new Set();
-    selectedCultivations.forEach((c) => {
-      DEFAULT_STRATEGIES[c].forEach((s) => strategyNames.add(s.name));
-    });
-    const averaged = Array.from(strategyNames).map((name) => {
-      let count = 0;
-      let bonus_penalty = 0;
-      let profit = 0;
-      let energy_cost = 0;
-      let weight_achieved = 0;
-      let base_revenue_a = 0;
-      let base_revenue_b = 0;
-      let base_revenue = 0;
-      selectedCultivations.forEach((c) => {
-        const st = DEFAULT_STRATEGIES[c].find((s) => s.name === name);
-        if (st) {
-          bonus_penalty += Number(st.bonus_penalty) || 0;
-          profit += Number(st.profit) || 0;
-          energy_cost += Number(st.energy_cost) || 0;
-          weight_achieved += Number(st.weight_achieved) || 0;
-          base_revenue_a += Number(st.base_revenue_a) || 0;
-          base_revenue_b += Number(st.base_revenue_b) || 0;
-          base_revenue +=
-            st.base_revenue !== undefined
-              ? Number(st.base_revenue) || 0
-              : (Number(st.base_revenue_a) || 0) +
-                (Number(st.base_revenue_b) || 0);
-          count += 1;
-        }
-      });
-      const denom = count || 1;
-      return {
-        name,
-        bonus_penalty: round1(bonus_penalty / denom),
-        profit: round1(profit / denom),
-        energy_cost: round1(energy_cost / denom),
-        weight_achieved: round1(weight_achieved / denom),
-        base_revenue_a: round1(base_revenue_a / denom),
-        base_revenue_b: round1(base_revenue_b / denom),
-        base_revenue: round1(base_revenue / denom),
-      };
-    });
-    setStrategies(averaged);
-  }, [selectedCultivations]);
+const RadarPlot = () => {
+  const cultivations = Object.keys(DEFAULT_STRATEGIES);
+  const [cultivation, setCultivation] = useState(cultivations[0]);
+  const [strategy, setStrategy] = useState("Default");
 
-  useEffect(() => {
-    setVisible((prev) => {
-      const vis = { ...prev };
-      strategies.forEach((st) => {
-        if (vis[st.name] === undefined) vis[st.name] = true;
-      });
-      return vis;
-    });
-  }, [strategies]);
+  const strategies = DEFAULT_STRATEGIES[cultivation];
+  const selected = useMemo(
+    () => strategies.find((s) => s.name === strategy) || strategies[0],
+    [strategies, strategy]
+  );
 
   const colorMap = useMemo(() => {
     const sorted = [...strategies].sort(
@@ -163,109 +110,82 @@ const RadarPlot = () => {
   const chartData = useMemo(() => {
     return KPI_FIELDS.map((kpi) => {
       const [domainMin, domainMax] = KPI_RANGES[kpi.key];
-      const entry = { metric: kpi.label };
-      strategies.forEach((s) => {
-        const v = Number(s[kpi.key]) || 0;
-        const scaled = (v - domainMin) / (domainMax - domainMin);
-        entry[s.name] = scaled;
-        entry[`${s.name}-raw`] = round1(v);
-      });
-      return entry;
+      const v = Number(selected[kpi.key]) || 0;
+      const scaled = (v - domainMin) / (domainMax - domainMin);
+      return { metric: kpi.label, value: scaled, raw: round1(v) };
     });
-  }, [strategies]);
+  }, [selected]);
 
-  const toggleCultivation = (name) => {
-    setSelectedCultivations((prev) =>
-      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
-    );
-  };
-
-  const toggle = (name) => {
-    setVisible((v) => ({ ...v, [name]: !v[name] }));
-  };
+  const color = colorMap[selected.name] || COLOR_PALETTE[0];
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
-      <div className="flex justify-center gap-2 flex-wrap">
-        {Object.keys(DEFAULT_STRATEGIES).map((c) => {
-          const isSelected = selectedCultivations.includes(c);
-          return (
-            <button
-              key={c}
-              type="button"
-              onClick={() => toggleCultivation(c)}
-              className={`px-3 py-1 rounded-full text-sm font-semibold border ${
-                isSelected
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "text-blue-500 border-blue-500"
-              }`}
-            >
-              {c}
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-6 flex justify-center gap-2 flex-wrap">
-        {strategies.map((s) => {
-          const color = colorMap[s.name];
-          const isOn = visible[s.name];
-          return (
-            <button
-              key={s.name}
-              type="button"
-              onClick={() => toggle(s.name)}
-              className="px-3 py-1 rounded-full text-sm font-semibold border"
-              style={{
-                borderColor: color,
-                backgroundColor: isOn ? color : "transparent",
-                color: isOn ? "#000" : color,
-              }}
-            >
-              {s.name}
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-8 flex justify-center">
-        <RadarChart
-          cx="50%"
-          cy="50%"
-          outerRadius="80%"
-          width={250}
-          height={200}
-          data={chartData}
-          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+    <div className="h-full flex flex-col">
+      <div className="flex items-center space-x-4 mb-4">
+        <select
+          value={cultivation}
+          onChange={(e) => setCultivation(e.target.value)}
+          className="rounded-md p-2"
         >
-          <PolarGrid stroke="currentColor" strokeOpacity={0.2} />
-          <PolarAngleAxis dataKey="metric" tick={renderAngleTick} tickLine={false} />
-          <PolarRadiusAxis
-            tick={false}
-            axisLine={false}
-            tickLine={false}
-            domain={[0, 1]}
-          />
-          {strategies
-            .filter((s) => visible[s.name])
-            .map((s) => {
-              const color = colorMap[s.name];
-              return (
-                <Radar
-                  key={s.name}
-                  name={s.name}
-                  dataKey={s.name}
-                  stroke={color}
-                  fill={color}
-                  fillOpacity={0.4}
-                  dot={{ r: 3, stroke: color, fill: color }}
-                  activeDot={renderActiveDot(color, s.name)}
-                />
-              );
-            })}
-        </RadarChart>
+          {cultivations.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select
+          value={strategy}
+          onChange={(e) => setStrategy(e.target.value)}
+          className="rounded-md p-2"
+        >
+          {strategies.map((s) => (
+            <option key={s.name} value={s.name}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => setStrategy("Default")}
+          className={`bg-green-600 text-white font-semibold px-4 py-2 rounded-md shadow-sm hover:bg-green-500 ${
+            strategy === "Default" ? "" : "opacity-50"
+          }`}
+        >
+          Default
+        </button>
+        <button
+          type="button"
+          onClick={() => setStrategy("Optimized")}
+          className={`bg-yellow-400 text-black font-semibold px-4 py-2 rounded-md shadow-sm hover:bg-yellow-300 ${
+            strategy === "Optimized" ? "" : "opacity-50"
+          }`}
+        >
+          Optimized
+        </button>
+      </div>
+      <div className="flex-1 flex items-center justify-center">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={chartData} outerRadius="90%">
+            <PolarGrid stroke="currentColor" strokeOpacity={0.2} />
+            <PolarAngleAxis dataKey="metric" tick={renderAngleTick} tickLine={false} />
+            <PolarRadiusAxis
+              tick={false}
+              axisLine={false}
+              tickLine={false}
+              domain={[0, 1]}
+            />
+            <Radar
+              dataKey="value"
+              stroke={color}
+              fill={color}
+              fillOpacity={0.4}
+              dot={{ r: 3, stroke: color, fill: color }}
+              activeDot={renderActiveDot(color)}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
 };
 
 export default RadarPlot;
-
