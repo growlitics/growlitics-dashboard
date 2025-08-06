@@ -10,50 +10,51 @@ const BarChart = ({ energyData = {} }) => {
   const radar = useRadar();
   const colorMap = radar?.colorMap || {};
 
-  const weeks = useMemo(() => Object.keys(energyData || {}), [energyData]);
+  const weeks = useMemo(
+    () => Object.keys(energyData || {}).sort((a, b) => Number(a) - Number(b)),
+    [energyData]
+  );
   const [week, setWeek] = useState(weeks[0] || "");
   useEffect(() => {
-    if (!week && weeks.length > 0) setWeek(weeks[0]);
+    if ((!week && weeks.length > 0) || (week && !weeks.includes(week))) {
+      setWeek(weeks[0] || "");
+    }
   }, [weeks, week]);
 
   const strategies = useMemo(() => {
     const weekData = energyData[week] || {};
     const first = Object.values(weekData)[0] || {};
-    return Object.keys(first);
+    return Object.entries(first)
+      .map(([s, v]) => ({ s, v: Number(v) || 0 }))
+      .sort((a, b) => a.v - b.v)
+      .map((e) => e.s);
   }, [energyData, week]);
 
   const chartData = useMemo(() => {
     const weekData = energyData[week] || {};
-    if (strategies.length < 2) return [];
     return Object.entries(weekData).map(([date, vals]) => {
-      const s1 = strategies[0];
-      const s2 = strategies[1];
-      const v1 = Number(vals[s1]) || 0;
-      const v2 = Number(vals[s2]) || 0;
-      const baselineStrategy = v1 <= v2 ? s1 : s2;
-      const diffStrategy = v1 <= v2 ? s2 : s1;
-      const baseline = Math.min(v1, v2);
-      const difference = Math.abs(v1 - v2);
-      return {
-        date,
-        baseline,
-        difference,
-        baselineStrategy,
-        diffStrategy,
-        [s1]: v1,
-        [s2]: v2,
-      };
+      const entries = strategies.map((s) => ({
+        s,
+        v: Number(vals[s]) || 0,
+      }));
+      const stacked = {};
+      const raw = {};
+      entries.forEach((e, idx) => {
+        raw[e.s] = e.v;
+        if (idx === 0) stacked[e.s] = e.v;
+        else stacked[e.s] = e.v - entries[idx - 1].v;
+      });
+      return { date, ...stacked, raw };
     });
   }, [energyData, week, strategies]);
 
-  const maxValue = useMemo(
-    () =>
-      chartData.reduce(
-        (max, d) => Math.max(max, (d.baseline || 0) + (d.difference || 0)),
-        0
-      ),
-    [chartData]
-  );
+  const maxValue = useMemo(() => {
+    return chartData.reduce((max, d) => {
+      const vals = Object.values(d.raw || {});
+      const highest = vals.length > 0 ? Math.max(...vals) : 0;
+      return Math.max(max, highest);
+    }, 0);
+  }, [chartData]);
 
   return (
     <Box height="100%" display="flex" flexDirection="column">
@@ -86,7 +87,7 @@ const BarChart = ({ energyData = {} }) => {
       <Box flex="1" mt={1}>
         <ResponsiveBar
           data={chartData}
-          keys={["baseline", "difference"]}
+          keys={strategies}
           indexBy="date"
           margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
           padding={0.3}
@@ -94,10 +95,7 @@ const BarChart = ({ energyData = {} }) => {
           maxValue={maxValue || "auto"}
           valueScale={{ type: "linear" }}
           indexScale={{ type: "band", round: true }}
-          colors={({ id, data }) => {
-            const strategy = id === "baseline" ? data.baselineStrategy : data.diffStrategy;
-            return colorMap[strategy] || colors.greenAccent[500];
-          }}
+          colors={({ id }) => colorMap[id] || colors.greenAccent[500]}
           axisTop={null}
           axisRight={null}
           axisBottom={{
@@ -140,7 +138,7 @@ const BarChart = ({ energyData = {} }) => {
               <Typography variant="body2">{data.date}</Typography>
               {strategies.map((s) => (
                 <Typography key={s} variant="body2">
-                  {s}: {data[s]}
+                  {s}: {data.raw?.[s]}
                 </Typography>
               ))}
             </Box>

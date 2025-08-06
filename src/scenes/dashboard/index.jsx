@@ -37,6 +37,38 @@ const normalizeKpiData = (data) => {
   }, {});
 };
 
+const buildEnergyData = (data) => {
+  const entries = Array.isArray(data)
+    ? data.map((d) => ({
+        strategy: d.name || d.strategy,
+        daily: d.daily || [],
+      }))
+    : Object.entries(data || {}).map(([key, val]) => ({
+        strategy: key.split("|")[1] || val.name || val.strategy,
+        daily: val.daily || [],
+      }));
+
+  const result = {};
+
+  entries.forEach(({ strategy, daily }) => {
+    if (!strategy || !Array.isArray(daily) || daily.length === 0) return;
+    const start = new Date(daily[0].date);
+    daily.forEach(({ date, total_energy_cost }) => {
+      if (!date) return;
+      const current = new Date(date);
+      const diffDays = Math.floor(
+        (current - start) / (1000 * 60 * 60 * 24)
+      );
+      const week = Math.floor(diffDays / 7) + 1;
+      if (!result[week]) result[week] = {};
+      if (!result[week][date]) result[week][date] = {};
+      result[week][date][strategy] = total_energy_cost;
+    });
+  });
+
+  return result;
+};
+
 const DashboardContent = ({ energyData }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -337,6 +369,7 @@ const Dashboard = () => {
       if (!parsed) return;
       if (Array.isArray(parsed)) {
         setGistData(normalizeKpiData(parsed));
+        setEnergyData(buildEnergyData(parsed));
         return;
       }
       const {
@@ -349,7 +382,11 @@ const Dashboard = () => {
       setGistData(normalizeKpiData(kpiPayload));
       const energy =
         daily_energy_cost || energy_cost_daily || energyField || dailyEnergyCost;
-      if (energy) setEnergyData(energy);
+      if (energy) {
+        setEnergyData(energy);
+      } else if (kpiPayload && kpiPayload.kpis) {
+        setEnergyData(buildEnergyData(kpiPayload.kpis));
+      }
     };
 
     if (batchesParam) {
