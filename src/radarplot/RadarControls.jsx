@@ -35,7 +35,7 @@ const buildData = (raw = DEFAULT_STRATEGIES) => {
   };
 };
 
-export const RadarProvider = ({ data = {}, children }) => {
+export const RadarProvider = ({ data = {}, batches = [], children }) => {
   const baseData = useMemo(() => {
     if (data) {
       if (data.cultivations) return data;
@@ -143,6 +143,7 @@ export const RadarProvider = ({ data = {}, children }) => {
     toggleStrategy,
     toggleCultivation,
     allCultivations,
+    batches,
   };
 
   return <RadarContext.Provider value={value}>{children}</RadarContext.Provider>;
