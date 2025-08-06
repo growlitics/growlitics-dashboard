@@ -14,6 +14,8 @@ import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 
+const DEFAULT_GIST_ID = process.env.REACT_APP_DEFAULT_GIST_ID;
+
 const normalizeKpiData = (data) => {
   if (!Array.isArray(data)) return data;
 
@@ -329,10 +331,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const gistId = params.get("gist");
+    const gistIdParam = params.get("gist");
     const dataParam = params.get("data");
     const dataUrl = params.get("data_url");
     const batchesParam = params.get("batches");
+    const gistId = gistIdParam || DEFAULT_GIST_ID;
 
     if (batchesParam) {
       const parsedBatches = batchesParam

@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { DEFAULT_STRATEGIES } from "./defaultStrategies";
 
 const COLOR_PALETTE = [
   "#FFD700",
@@ -18,7 +17,7 @@ const RadarContext = createContext();
 
 export const useRadar = () => useContext(RadarContext);
 
-const buildData = (raw = DEFAULT_STRATEGIES) => {
+const buildData = (raw = {}) => {
   const cultivations = Object.keys(raw || {});
   const strategiesSet = new Set();
   const kpis = {};
