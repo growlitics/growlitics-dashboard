@@ -41,7 +41,7 @@ const BarChart = ({ energyData = {} }) => {
     return Array.from(set);
   }, [energyData, week, selectedCultivations, visible]);
 
-  const chartData = useMemo(() => {
+  const rawData = useMemo(() => {
     if (!week) return [];
     const start = new Date(week);
     const days = [];
@@ -63,14 +63,30 @@ const BarChart = ({ energyData = {} }) => {
     return days;
   }, [energyData, week, strategies, selectedCultivations]);
 
+  const chartData = useMemo(() => {
+    return rawData.map((day) => {
+      let prev = 0;
+      const entry = { date: day.date };
+      strategies.forEach((s) => {
+        const val = Number(day[s]) || 0;
+        entry[s] = val - prev;
+        entry[`orig_${s}`] = val;
+        prev = val;
+      });
+      return entry;
+    });
+  }, [rawData, strategies]);
+
   const maxValue = useMemo(() => {
     let max = 0;
-    chartData.forEach((d) => {
-      const total = strategies.reduce((sum, s) => sum + (Number(d[s]) || 0), 0);
-      if (total > max) max = total;
+    rawData.forEach((d) => {
+      strategies.forEach((s) => {
+        const v = Number(d[s]) || 0;
+        if (v > max) max = v;
+      });
     });
     return max;
-  }, [chartData, strategies]);
+  }, [rawData, strategies]);
 
   const maxScale = maxValue > 0 ? maxValue * 1.1 : 0;
   const minScale = 0;
@@ -171,7 +187,7 @@ const BarChart = ({ energyData = {} }) => {
               <Typography variant="body2">{data.date}</Typography>
               {strategies.map((s) => (
                 <Typography key={s} variant="body2">
-                  {s}: {Number(data[s] || 0).toFixed(3)}
+                  {s}: {Number(data[`orig_${s}`] || 0).toFixed(3)}
                 </Typography>
               ))}
             </Box>
