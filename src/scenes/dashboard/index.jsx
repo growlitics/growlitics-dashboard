@@ -3,10 +3,10 @@ import { useEffect, useState, useMemo } from "react";
 import { tokens } from "../../theme";
 import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
-import EmailIcon from "@mui/icons-material/Email";
-import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import TrafficIcon from "@mui/icons-material/Traffic";
+import EuroSymbolIcon from "@mui/icons-material/EuroSymbol";
+import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
+import BoltIcon from "@mui/icons-material/Bolt";
+import SavingsIcon from "@mui/icons-material/Savings";
 import Header from "../../components/Header";
 import LineChart from "../../components/LineChart";
 import BarChart from "../../components/BarChart";
@@ -82,7 +82,8 @@ const DashboardContent = () => {
     return averages;
   }, [selectedCultivations, visible, kpis]);
 
-  const formatValue = (val) => (val !== null && val !== undefined ? val.toFixed(3) : "");
+  const formatValue = (val, unit) =>
+    val !== null && val !== undefined ? `${val.toFixed(3)} ${unit}` : "";
 
   return (
     <Box m="20px">
@@ -125,61 +126,61 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title={formatValue(kpiAverages.euro_per_kwh)}
-            subtitle="Energy Efficiency"
-            icon={
-              <EmailIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title={formatValue(kpiAverages.kwh_per_gram)}
-            subtitle="Plant Efficiency"
-            icon={
-              <PointOfSaleIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title={formatValue(kpiAverages.euro_per_gram)}
-            subtitle="Cost Efficiency"
-            icon={
-              <PersonAddIcon
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title={formatValue(kpiAverages.profit_per_m2)}
+            title={formatValue(kpiAverages.profit_per_m2, "€ / m²")}
             subtitle="Profit per m²"
             icon={
-              <TrafficIcon
+              <EuroSymbolIcon
+                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
+          />
+        </Box>
+        <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={formatValue(kpiAverages.kwh_per_gram, "kWh / g")}
+            subtitle="Plant Efficiency"
+            icon={
+              <LocalFloristIcon
+                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
+          />
+        </Box>
+        <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={formatValue(kpiAverages.euro_per_kwh, "€ / kWh")}
+            subtitle="Energy Efficiency"
+            icon={
+              <BoltIcon
+                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+              />
+            }
+          />
+        </Box>
+        <Box
+          gridColumn="span 3"
+          backgroundColor={colors.primary[400]}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <StatBox
+            title={formatValue(kpiAverages.euro_per_gram, "€ / g")}
+            subtitle="Cost Efficiency"
+            icon={
+              <SavingsIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
               />
             }
