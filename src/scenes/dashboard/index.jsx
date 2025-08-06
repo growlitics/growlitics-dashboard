@@ -14,6 +14,9 @@ import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 
+const DEFAULT_GIST_ID = process.env.REACT_APP_DEFAULT_DASHBOARD_GIST_ID;
+const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
+
 const normalizeKpiData = (data) => {
   if (!Array.isArray(data)) return data;
 
@@ -44,6 +47,40 @@ const DashboardContent = () => {
     kpis = {},
     colorMap = {},
   } = radar || {};
+
+  const saveDefaultDashboard = async () => {
+    if (!DEFAULT_GIST_ID || !GITHUB_TOKEN) {
+      console.error(
+        "DEFAULT_DASHBOARD_GIST_ID not set; cannot update default dashboard"
+      );
+      return;
+    }
+    try {
+      const body = JSON.stringify({
+        files: {
+          "dashboard.json": {
+            content: JSON.stringify(radar?.kpis || {}, null, 2),
+          },
+        },
+      });
+      const res = await fetch(
+        `https://api.github.com/gists/${DEFAULT_GIST_ID}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `token ${GITHUB_TOKEN}`,
+          },
+          body,
+        }
+      );
+      if (!res.ok) {
+        console.error("Failed to update default dashboard", await res.text());
+      }
+    } catch (err) {
+      console.error("Failed to update default dashboard", err);
+    }
+  };
 
   const strategyKpis = useMemo(() => {
     const result = {};
@@ -120,6 +157,20 @@ const DashboardContent = () => {
           >
             <DownloadOutlinedIcon sx={{ mr: "10px" }} />
             Download Reports
+          </Button>
+          <Button
+            onClick={saveDefaultDashboard}
+            disabled={!DEFAULT_GIST_ID || !GITHUB_TOKEN}
+            sx={{
+              ml: "10px",
+              backgroundColor: colors.greenAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "10px 20px",
+            }}
+          >
+            Save as Default
           </Button>
         </Box>
       </Box>
