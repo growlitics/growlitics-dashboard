@@ -37,7 +37,7 @@ const normalizeKpiData = (data) => {
   }, {});
 };
 
-const DashboardContent = () => {
+const DashboardContent = ({ energyData }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const radar = useRadar();
@@ -302,17 +302,10 @@ const DashboardContent = () => {
           gridColumn="5 / span 4"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
+          display="flex"
+          flexDirection="column"
         >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ padding: "30px 30px 0 30px" }}
-          >
-            Sales Quantity
-          </Typography>
-          <Box height="250px" mt="-20px">
-            <BarChart isDashboard={true} />
-          </Box>
+          <BarChart energyData={energyData} />
         </Box>
         <Box
           gridColumn="9 / span 4"
@@ -329,6 +322,7 @@ const DashboardContent = () => {
 
 const Dashboard = () => {
   const [gistData, setGistData] = useState(null);
+  const [energyData, setEnergyData] = useState({});
   const [batches, setBatches] = useState([]);
 
   useEffect(() => {
@@ -338,6 +332,25 @@ const Dashboard = () => {
     const dataUrl = params.get("data_url");
     const batchesParam = params.get("batches");
     const gistId = gistIdParam || DEFAULT_GIST_ID;
+
+    const processFetchedData = (parsed) => {
+      if (!parsed) return;
+      if (Array.isArray(parsed)) {
+        setGistData(normalizeKpiData(parsed));
+        return;
+      }
+      const {
+        daily_energy_cost,
+        energy_cost_daily,
+        energyData: energyField,
+        dailyEnergyCost,
+        ...kpiPayload
+      } = parsed;
+      setGistData(normalizeKpiData(kpiPayload));
+      const energy =
+        daily_energy_cost || energy_cost_daily || energyField || dailyEnergyCost;
+      if (energy) setEnergyData(energy);
+    };
 
     if (batchesParam) {
       const parsedBatches = batchesParam
@@ -350,7 +363,7 @@ const Dashboard = () => {
     if (dataParam) {
       try {
         const parsed = JSON.parse(decodeURIComponent(dataParam));
-        setGistData(normalizeKpiData(parsed));
+        processFetchedData(parsed);
       } catch (err) {
         console.error("Failed to parse data param", err);
       }
@@ -362,7 +375,7 @@ const Dashboard = () => {
         try {
           const res = await fetch(dataUrl);
           const json = await res.json();
-          setGistData(normalizeKpiData(json));
+          processFetchedData(json);
         } catch (err) {
           console.error("Failed to fetch data_url JSON", err);
         }
@@ -383,7 +396,7 @@ const Dashboard = () => {
         if (firstFile && firstFile.content) {
           try {
             const parsed = JSON.parse(firstFile.content);
-            setGistData(normalizeKpiData(parsed));
+            processFetchedData(parsed);
           } catch (err) {
             console.error("Failed to parse gist JSON", err);
           }
@@ -398,7 +411,7 @@ const Dashboard = () => {
 
   return (
     <RadarProvider data={gistData} batches={batches}>
-      <DashboardContent />
+      <DashboardContent energyData={energyData} />
     </RadarProvider>
   );
 };
