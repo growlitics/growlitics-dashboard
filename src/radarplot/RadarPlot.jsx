@@ -10,20 +10,16 @@ import {
 
 const round1 = (n) => Math.round(n * 10) / 10;
 
-function renderActiveDot(color, name, idx) {
+function renderActiveDot(color, name) {
   return (props) => {
     const { cx, cy, payload } = props;
     const raw = round1(payload[`${name}-raw`]);
-    // Offset labels vertically so multiple strategies don't overlap
-    const direction = idx % 2 === 0 ? -1 : 1;
-    const step = Math.ceil((idx + 1) / 2);
-    const offset = direction * step * 12; // 12px per step
     return (
       <g>
         <circle cx={cx} cy={cy} r={4} stroke={color} strokeWidth={2} fill="#fff" />
         <text
           x={cx}
-          y={Number(cy) + offset}
+          y={Number(cy) - 8}
           textAnchor="middle"
           fill={color}
           fontSize={12}
@@ -118,7 +114,7 @@ const RadarPlot = ({
           />
           {strategies
             .filter((s) => visible[s.name])
-            .map((s, idx) => {
+            .map((s) => {
               const color = colorMap[s.name];
               return (
                 <Radar
@@ -129,7 +125,7 @@ const RadarPlot = ({
                   fill={color}
                   fillOpacity={0.4}
                   dot={{ r: 3, stroke: color, fill: color }}
-                  activeDot={renderActiveDot(color, s.name, idx)}
+                  activeDot={renderActiveDot(color, s.name)}
                 />
               );
             })}
