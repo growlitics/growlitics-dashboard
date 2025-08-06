@@ -99,13 +99,13 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
       const denom = count || 1;
       return {
         name,
-        bonus_penalty: Math.round((bonus_penalty / denom) * 10) / 10,
-        profit: Math.round((profit / denom) * 10) / 10,
-        energy_cost: Math.round((energy_cost / denom) * 10) / 10,
-        weight_achieved: Math.round((weight_achieved / denom) * 10) / 10,
-        base_revenue_a: Math.round((base_revenue_a / denom) * 10) / 10,
-        base_revenue_b: Math.round((base_revenue_b / denom) * 10) / 10,
-        base_revenue: Math.round((base_revenue / denom) * 10) / 10,
+        bonus_penalty: Math.round((bonus_penalty / denom) * 1000) / 1000,
+        profit: Math.round((profit / denom) * 1000) / 1000,
+        energy_cost: Math.round((energy_cost / denom) * 1000) / 1000,
+        weight_achieved: Math.round((weight_achieved / denom) * 1000) / 1000,
+        base_revenue_a: Math.round((base_revenue_a / denom) * 1000) / 1000,
+        base_revenue_b: Math.round((base_revenue_b / denom) * 1000) / 1000,
+        base_revenue: Math.round((base_revenue / denom) * 1000) / 1000,
       };
     });
     setStrategies(averaged);

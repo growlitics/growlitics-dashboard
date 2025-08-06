@@ -58,7 +58,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
         stacked: true,
         reverse: false,
       }}
-      yFormat=" >-.2f"
+      yFormat=" >-.3f"
       curve="catmullRom"
       axisTop={null}
       axisRight={null}
@@ -80,6 +80,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
         legend: isDashboard ? undefined : "count", // added
         legendOffset: -40,
         legendPosition: "middle",
+        format: (value) => Number(value).toFixed(3),
       }}
       enableGridX={false}
       enableGridY={false}
