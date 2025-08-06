@@ -88,7 +88,7 @@ const DashboardContent = ({ energyData }) => {
         euro_per_kwh: 0,
         kwh_per_gram: 0,
         euro_per_gram: 0,
-        profit: 0,
+        profit_total: 0,
       };
       let count = 0;
 
@@ -107,7 +107,12 @@ const DashboardContent = ({ energyData }) => {
 
       const averages = {};
       Object.keys(totals).forEach((key) => {
-        averages[key] = count > 0 ? roundToThree(totals[key] / count) : null;
+        if (count > 0) {
+          const divisor = key === "profit_total" ? 1 : count;
+          averages[key] = roundToThree(totals[key] / divisor);
+        } else {
+          averages[key] = null;
+        }
       });
       result[strategy] = averages;
     });
@@ -171,7 +176,7 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("profit")}
+            lines={buildLines("profit_total")}
             subtitle="Total Profit (€)"
             icon={
               <EuroSymbolIcon
