@@ -86,7 +86,7 @@ const DashboardContent = ({ energyData }) => {
         euro_per_kwh: 0,
         kwh_per_gram: 0,
         euro_per_gram: 0,
-        profit_per_m2: 0,
+        profit: 0,
       };
       let count = 0;
 
@@ -172,8 +172,8 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("profit_per_m2")}
-            subtitle="Profit per m² (€/m²)"
+            lines={buildLines("profit")}
+            subtitle="Total Profit (€)"
             icon={
               <EuroSymbolIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
