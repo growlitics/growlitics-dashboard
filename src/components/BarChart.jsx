@@ -63,15 +63,22 @@ const BarChart = ({ energyData = {} }) => {
     return days;
   }, [energyData, week, strategies, selectedCultivations]);
 
+  const strategyKeys = useMemo(
+    () => strategies.map((_, i) => String(i)),
+    [strategies]
+  );
+
   const chartData = useMemo(() => {
     return rawData.map((day) => {
+      const sorted = strategies
+        .map((s) => ({ key: s, value: Number(day[s]) || 0 }))
+        .sort((a, b) => a.value - b.value);
       let prev = 0;
       const entry = { date: day.date };
-      strategies.forEach((s) => {
-        const val = Number(day[s]) || 0;
-        entry[s] = val - prev;
-        entry[`orig_${s}`] = val;
-        prev = val;
+      sorted.forEach(({ key, value }, idx) => {
+        entry[String(idx)] = value - prev;
+        entry[`strategy_${idx}`] = key;
+        prev = value;
       });
       return entry;
     });
@@ -130,7 +137,7 @@ const BarChart = ({ energyData = {} }) => {
       <Box flex="1" mt={1}>
         <ResponsiveBar
           data={chartData}
-          keys={strategies}
+          keys={strategyKeys}
           indexBy="date"
           margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
           padding={0.3}
@@ -139,7 +146,9 @@ const BarChart = ({ energyData = {} }) => {
           maxValue={maxScale}
           valueScale={{ type: "linear" }}
           indexScale={{ type: "band", round: true }}
-          colors={({ id }) => colorMap[id] || colors.greenAccent[500]}
+          colors={({ id, data }) =>
+            colorMap[data[`strategy_${id}`]] || colors.greenAccent[500]
+          }
           axisTop={null}
           axisRight={null}
           axisBottom={{
@@ -185,11 +194,16 @@ const BarChart = ({ energyData = {} }) => {
           tooltip={({ data }) => (
             <Box p={1}>
               <Typography variant="body2">{data.date}</Typography>
-              {strategies.map((s) => (
-                <Typography key={s} variant="body2">
-                  {s}: {Number(data[`orig_${s}`] || 0).toFixed(3)}
-                </Typography>
-              ))}
+              {strategyKeys.map((key) => {
+                const name = data[`strategy_${key}`];
+                if (!name) return null;
+                const val = Number(data[key] || 0);
+                return (
+                  <Typography key={key} variant="body2">
+                    {name}: {val.toFixed(3)}
+                  </Typography>
+                );
+              })}
             </Box>
           )}
         />
