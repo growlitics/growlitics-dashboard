@@ -184,7 +184,7 @@ const RadarControls = () => {
       </div>
 
       {/* Strategy buttons */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-3">
         {strategies.map((s) => {
           const isVisible = visible[s.name];
           const color = colorMap[s.name] || "#999";

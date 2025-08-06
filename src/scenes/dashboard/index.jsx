@@ -38,67 +38,66 @@ const DashboardContent = () => {
   const colors = tokens(theme.palette.mode);
   const radar = useRadar();
 
-  const { selectedCultivations = [], visible = {}, kpis = {} } = radar || {};
+  const {
+    selectedCultivations = [],
+    visible = {},
+    kpis = {},
+    colorMap = {},
+  } = radar || {};
 
-  const kpiAverages = useMemo(() => {
-    const totals = {
-      euro_per_kwh: 0,
-      kwh_per_gram: 0,
-      euro_per_gram: 0,
-      profit_per_m2: 0,
-    };
-    const counts = {
-      euro_per_kwh: 0,
-      kwh_per_gram: 0,
-      euro_per_gram: 0,
-      profit_per_m2: 0,
-    };
-
+  const strategyKpis = useMemo(() => {
+    const result = {};
     const strategies = Object.keys(visible || {}).filter((s) => visible[s]);
 
-    selectedCultivations.forEach((cultivation) => {
-      const stratTotals = {
+    strategies.forEach((strategy) => {
+      const totals = {
         euro_per_kwh: 0,
         kwh_per_gram: 0,
         euro_per_gram: 0,
         profit_per_m2: 0,
       };
-      let stratCount = 0;
+      let count = 0;
 
-      strategies.forEach((strategy) => {
+      selectedCultivations.forEach((cultivation) => {
         const data = kpis ? kpis[`${cultivation}|${strategy}`] : undefined;
         if (data) {
-          Object.keys(stratTotals).forEach((key) => {
+          Object.keys(totals).forEach((key) => {
             const val = Number(data[key]);
             if (!isNaN(val)) {
-              stratTotals[key] += val;
+              totals[key] += val;
             }
           });
-          stratCount += 1;
+          count += 1;
         }
       });
 
-      if (stratCount > 0) {
-        Object.keys(totals).forEach((key) => {
-          totals[key] += stratTotals[key] / stratCount;
-          counts[key] += 1;
-        });
-      }
+      const averages = {};
+      Object.keys(totals).forEach((key) => {
+        averages[key] =
+          count > 0
+            ? Math.round((totals[key] / count) * 1000) / 1000
+            : null;
+      });
+      result[strategy] = averages;
     });
 
-    const averages = {};
-    Object.keys(totals).forEach((key) => {
-      averages[key] =
-        counts[key] > 0
-          ? Math.round((totals[key] / counts[key]) * 1000) / 1000
-          : null;
-    });
-
-    return averages;
+    return result;
   }, [selectedCultivations, visible, kpis]);
 
   const formatValue = (val, unit) =>
     val !== null && val !== undefined ? `${val.toFixed(3)} ${unit}` : "";
+
+  const buildLines = (key, unit) =>
+    Object.entries(strategyKpis)
+      .map(([strategy, values]) => {
+        const val = values[key];
+        if (val === null || val === undefined) return null;
+        return {
+          label: `${strategy}: ${formatValue(val, unit)}`,
+          color: colorMap[strategy] || colors.grey[100],
+        };
+      })
+      .filter(Boolean);
 
   return (
     <Box m="20px">
@@ -141,7 +140,7 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title={formatValue(kpiAverages.profit_per_m2, "€ / m²")}
+            lines={buildLines("profit_per_m2", "€ / m²")}
             subtitle="Profit per m²"
             icon={
               <EuroSymbolIcon
@@ -158,7 +157,7 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title={formatValue(kpiAverages.kwh_per_gram, "kWh / g")}
+            lines={buildLines("kwh_per_gram", "kWh / g")}
             subtitle="Plant Efficiency"
             icon={
               <LocalFloristIcon
@@ -175,7 +174,7 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title={formatValue(kpiAverages.euro_per_kwh, "€ / kWh")}
+            lines={buildLines("euro_per_kwh", "€ / kWh")}
             subtitle="Energy Efficiency"
             icon={
               <BoltIcon
@@ -192,7 +191,7 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title={formatValue(kpiAverages.euro_per_gram, "€ / g")}
+            lines={buildLines("euro_per_gram", "€ / g")}
             subtitle="Cost Efficiency"
             icon={
               <SavingsIcon
