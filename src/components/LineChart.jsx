@@ -7,6 +7,11 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const yMin = Math.min(
+    ...data.flatMap((series) => series.data.map((d) => d.y))
+  );
+  const lowerBound = yMin < 0 ? yMin : 0;
+
   return (
     <ResponsiveLine
       data={data}
@@ -48,7 +53,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
       xScale={{ type: "point" }}
       yScale={{
         type: "linear",
-        min: "auto",
+        min: lowerBound,
         max: "auto",
         stacked: true,
         reverse: false,
