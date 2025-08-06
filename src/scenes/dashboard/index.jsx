@@ -57,18 +57,33 @@ const DashboardContent = () => {
     const strategies = Object.keys(visible || {}).filter((s) => visible[s]);
 
     selectedCultivations.forEach((cultivation) => {
+      const stratTotals = {
+        euro_per_kwh: 0,
+        kwh_per_gram: 0,
+        euro_per_gram: 0,
+        profit_per_m2: 0,
+      };
+      let stratCount = 0;
+
       strategies.forEach((strategy) => {
         const data = kpis ? kpis[`${cultivation}|${strategy}`] : undefined;
         if (data) {
-          Object.keys(totals).forEach((key) => {
+          Object.keys(stratTotals).forEach((key) => {
             const val = Number(data[key]);
             if (!isNaN(val)) {
-              totals[key] += val;
-              counts[key] += 1;
+              stratTotals[key] += val;
             }
           });
+          stratCount += 1;
         }
       });
+
+      if (stratCount > 0) {
+        Object.keys(totals).forEach((key) => {
+          totals[key] += stratTotals[key] / stratCount;
+          counts[key] += 1;
+        });
+      }
     });
 
     const averages = {};
