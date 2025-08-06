@@ -87,11 +87,11 @@ const DashboardContent = ({ energyData }) => {
         const totals = {
           euro_per_kwh: 0,
           kwh_per_gram: 0,
-        euro_per_gram: 0,
-        profit_total: 0,
-        profit_per_m2: 0,
-        energy_cost_total: 0,
-      };
+          euro_per_gram: 0,
+          profit_total: 0,
+          profit_per_m2: 0,
+          energy_cost_total: 0,
+        };
         let count = 0;
 
         selectedCultivations.forEach((cultivation) => {
@@ -99,7 +99,6 @@ const DashboardContent = ({ energyData }) => {
           if (data) {
             Object.keys(totals).forEach((key) => {
               let sourceKey = key;
-              if (key === "profit_total") sourceKey = "profit";
               if (key === "energy_cost_total") sourceKey = "energy_cost";
               const val = Number(data[sourceKey]);
               if (!isNaN(val)) {
@@ -113,7 +112,8 @@ const DashboardContent = ({ energyData }) => {
         const averages = {};
         Object.keys(totals).forEach((key) => {
           if (count > 0) {
-            const divisor = key === "profit_total" || key === "energy_cost_total" ? 1 : count;
+            const divisor =
+              key === "profit_total" || key === "energy_cost_total" ? 1 : count;
             averages[key] = roundToThree(totals[key] / divisor);
           } else {
             averages[key] = null;
@@ -388,7 +388,6 @@ const Dashboard = () => {
     const dataParam = params.get("data");
     const dataUrl = params.get("data_url");
     const batchesParam = params.get("batches");
-    const gistId = gistIdParam || DEFAULT_GIST_ID;
 
     const processFetchedData = (parsed) => {
       if (!parsed) return;
@@ -414,50 +413,34 @@ const Dashboard = () => {
       if (energy) setEnergyData(energy);
     };
 
-    if (batchesParam) {
-      const parsedBatches = batchesParam
-        .split(",")
-        .map((b) => b.trim())
-        .filter(Boolean);
-      setBatches(parsedBatches);
-    }
-
-    if (dataParam) {
+    const fetchGist = async (id) => {
       try {
-        const parsed = JSON.parse(decodeURIComponent(dataParam));
-        processFetchedData(parsed);
-      } catch (err) {
-        console.error("Failed to parse data param", err);
-      }
-      return;
-    }
-
-    if (dataUrl) {
-      const fetchDataUrl = async () => {
-        try {
-          const res = await fetch(dataUrl);
-          const json = await res.json();
-          processFetchedData(json);
-        } catch (err) {
-          console.error("Failed to fetch data_url JSON", err);
-        }
-      };
-
-      fetchDataUrl();
-      return;
-    }
-
-    if (!gistId) return;
-
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`https://api.github.com/gists/${gistId}`);
+        const res = await fetch(`https://api.github.com/gists/${id}`);
         const json = await res.json();
         const files = json.files || {};
         const firstFile = Object.values(files)[0];
         if (firstFile && firstFile.content) {
           try {
             const parsed = JSON.parse(firstFile.content);
+            // If the fetched gist is a pointer, extract the ID and fetch again
+            if (
+              parsed &&
+              typeof parsed === "object" &&
+              !Array.isArray(parsed) &&
+              !parsed.cultivations &&
+              !parsed.kpis &&
+              !parsed.strategies
+            ) {
+              const nextId =
+                parsed.default_gist_id ||
+                parsed.gist_id ||
+                parsed.gist ||
+                parsed.id;
+              if (nextId) {
+                await fetchGist(nextId);
+                return;
+              }
+            }
             processFetchedData(parsed);
           } catch (err) {
             console.error("Failed to parse gist JSON", err);
@@ -468,7 +451,43 @@ const Dashboard = () => {
       }
     };
 
-    fetchData();
+    const init = async () => {
+      if (batchesParam) {
+        const parsedBatches = batchesParam
+          .split(",")
+          .map((b) => b.trim())
+          .filter(Boolean);
+        setBatches(parsedBatches);
+      }
+
+      if (dataParam) {
+        try {
+          const parsed = JSON.parse(decodeURIComponent(dataParam));
+          processFetchedData(parsed);
+        } catch (err) {
+          console.error("Failed to parse data param", err);
+        }
+        return;
+      }
+
+      if (dataUrl) {
+        try {
+          const res = await fetch(dataUrl);
+          const json = await res.json();
+          processFetchedData(json);
+        } catch (err) {
+          console.error("Failed to fetch data_url JSON", err);
+        }
+        return;
+      }
+
+      const initialGist = gistIdParam || DEFAULT_GIST_ID;
+      if (!initialGist) return;
+
+      await fetchGist(initialGist);
+    };
+
+    init();
   }, []);
 
   return (
