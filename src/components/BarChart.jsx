@@ -58,42 +58,22 @@ const BarChart = ({ energyData = {} }) => {
           if (!isNaN(v)) values[s] += v;
         });
       });
-
-      const entries = Object.entries(values);
-      entries.sort((a, b) => a[1] - b[1]);
-      const minPair = entries[0] || [null, 0];
-      const maxPair = entries[entries.length - 1] || minPair;
-      const base = minPair[1];
-      const diff = Math.max(0, maxPair[1] - minPair[1]);
-      days.push({
-        date: dateStr,
-        base,
-        diff,
-        baseStrategy: minPair[0],
-        diffStrategy: maxPair[0],
-        values,
-      });
+      days.push({ date: dateStr, ...values });
     }
     return days;
   }, [energyData, week, strategies, selectedCultivations]);
 
-  const { minValue, maxValue } = useMemo(() => {
-    if (!chartData.length) return { minValue: 0, maxValue: 0 };
-    let min = Infinity;
-    let max = -Infinity;
+  const maxValue = useMemo(() => {
+    let max = 0;
     chartData.forEach((d) => {
-      const dayMin = d.base ?? 0;
-      const dayMax = (d.base ?? 0) + (d.diff ?? 0);
-      if (dayMin < min) min = dayMin;
-      if (dayMax > max) max = dayMax;
+      const total = strategies.reduce((sum, s) => sum + (Number(d[s]) || 0), 0);
+      if (total > max) max = total;
     });
-    if (min === Infinity) min = 0;
-    if (max === -Infinity) max = 0;
-    return { minValue: min, maxValue: max };
-  }, [chartData]);
+    return max;
+  }, [chartData, strategies]);
 
   const maxScale = maxValue > 0 ? maxValue * 1.1 : 0;
-  const minScale = minValue < 0 ? minValue * 1.1 : 0;
+  const minScale = 0;
 
   const getWeekNumber = (dateStr) => {
     const d = new Date(dateStr);
@@ -134,7 +114,7 @@ const BarChart = ({ energyData = {} }) => {
       <Box flex="1" mt={1}>
         <ResponsiveBar
           data={chartData}
-          keys={["base", "diff"]}
+          keys={strategies}
           indexBy="date"
           margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
           padding={0.3}
@@ -143,13 +123,7 @@ const BarChart = ({ energyData = {} }) => {
           maxValue={maxScale}
           valueScale={{ type: "linear" }}
           indexScale={{ type: "band", round: true }}
-          colors={({ id, data }) => {
-            if (id === "base")
-              return colorMap[data.baseStrategy] || colors.greenAccent[500];
-            if (id === "diff")
-              return colorMap[data.diffStrategy] || colors.greenAccent[300];
-            return colors.greenAccent[500];
-          }}
+          colors={({ id }) => colorMap[id] || colors.greenAccent[500]}
           axisTop={null}
           axisRight={null}
           axisBottom={{
@@ -195,9 +169,9 @@ const BarChart = ({ energyData = {} }) => {
           tooltip={({ data }) => (
             <Box p={1}>
               <Typography variant="body2">{data.date}</Typography>
-              {Object.entries(data.values || {}).map(([s, v]) => (
+              {strategies.map((s) => (
                 <Typography key={s} variant="body2">
-                  {s}: {Number(v).toFixed(3)}
+                  {s}: {Number(data[s] || 0).toFixed(3)}
                 </Typography>
               ))}
             </Box>

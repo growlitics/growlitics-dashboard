@@ -116,16 +116,16 @@ const DashboardContent = ({ energyData }) => {
     return result;
   }, [selectedCultivations, visible, kpis]);
 
-  const formatValue = (val, unit) =>
-    val !== null && val !== undefined ? `${val.toFixed(3)} ${unit}` : "";
+  const formatValue = (val) =>
+    val !== null && val !== undefined ? val.toFixed(3) : "";
 
-  const buildLines = (key, unit) =>
+  const buildLines = (key) =>
     Object.entries(strategyKpis)
       .map(([strategy, values]) => {
         const val = values[key];
         if (val === null || val === undefined) return null;
         return {
-          label: `${strategy}: ${formatValue(val, unit)}`,
+          label: formatValue(val),
           color: colorMap[strategy] || colors.grey[100],
         };
       })
@@ -172,8 +172,8 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("profit_per_m2", "€ / m²")}
-            subtitle="Profit per m²"
+            lines={buildLines("profit_per_m2")}
+            subtitle="Profit per m² (€/m²)"
             icon={
               <EuroSymbolIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -189,8 +189,8 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("kwh_per_gram", "kWh / g")}
-            subtitle="Plant Efficiency"
+            lines={buildLines("kwh_per_gram")}
+            subtitle="Plant Efficiency (kWh/g)"
             icon={
               <LocalFloristIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -206,8 +206,8 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("euro_per_kwh", "€ / kWh")}
-            subtitle="Energy Efficiency"
+            lines={buildLines("euro_per_kwh")}
+            subtitle="Energy Efficiency (€/kWh)"
             icon={
               <BoltIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -223,8 +223,8 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("euro_per_gram", "€ / g")}
-            subtitle="Cost Efficiency"
+            lines={buildLines("euro_per_gram")}
+            subtitle="Cost Efficiency (€/g)"
             icon={
               <SavingsIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
