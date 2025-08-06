@@ -83,42 +83,50 @@ const DashboardContent = ({ energyData }) => {
     const result = {};
     const strategies = Object.keys(visible || {}).filter((s) => visible[s]);
 
-    strategies.forEach((strategy) => {
-      const totals = {
-        euro_per_kwh: 0,
-        kwh_per_gram: 0,
+      strategies.forEach((strategy) => {
+        const totals = {
+          euro_per_kwh: 0,
+          kwh_per_gram: 0,
         euro_per_gram: 0,
         profit_total: 0,
+        profit_per_m2: 0,
+        energy_cost_total: 0,
       };
-      let count = 0;
+        let count = 0;
 
-      selectedCultivations.forEach((cultivation) => {
-        const data = kpis ? kpis[`${cultivation}|${strategy}`] : undefined;
-        if (data) {
-          Object.keys(totals).forEach((key) => {
-            const val = Number(data[key]);
-            if (!isNaN(val)) {
-              totals[key] += val;
-            }
-          });
-          count += 1;
-        }
+        selectedCultivations.forEach((cultivation) => {
+          const data = kpis ? kpis[`${cultivation}|${strategy}`] : undefined;
+          if (data) {
+            Object.keys(totals).forEach((key) => {
+              let sourceKey = key;
+              if (key === "profit_total") sourceKey = "profit";
+              if (key === "energy_cost_total") sourceKey = "energy_cost";
+              const val = Number(data[sourceKey]);
+              if (!isNaN(val)) {
+                totals[key] += val;
+              }
+            });
+            count += 1;
+          }
+        });
+
+        const averages = {};
+        Object.keys(totals).forEach((key) => {
+          if (count > 0) {
+            const divisor = key === "profit_total" || key === "energy_cost_total" ? 1 : count;
+            averages[key] = roundToThree(totals[key] / divisor);
+          } else {
+            averages[key] = null;
+          }
+        });
+        averages.energy_cost_per_profit = totals.profit_total
+          ? roundToThree(totals.energy_cost_total / totals.profit_total)
+          : null;
+        result[strategy] = averages;
       });
 
-      const averages = {};
-      Object.keys(totals).forEach((key) => {
-        if (count > 0) {
-          const divisor = key === "profit_total" ? 1 : count;
-          averages[key] = roundToThree(totals[key] / divisor);
-        } else {
-          averages[key] = null;
-        }
-      });
-      result[strategy] = averages;
-    });
-
-    return result;
-  }, [selectedCultivations, visible, kpis]);
+      return result;
+    }, [selectedCultivations, visible, kpis]);
 
   const formatValue = (val) =>
     val !== null && val !== undefined ? roundToThree(val).toFixed(3) : "";
@@ -134,6 +142,19 @@ const DashboardContent = ({ energyData }) => {
         };
       })
       .filter(Boolean);
+
+  const profitDifference = useMemo(() => {
+    const profits = Object.entries(strategyKpis)
+      .map(([strategy, values]) => ({ strategy, value: values.profit_total }))
+      .filter(({ value }) => value !== null && value !== undefined);
+    if (profits.length < 2) return null;
+    profits.sort((a, b) => b.value - a.value);
+    const diff = roundToThree(profits[0].value - profits[1].value);
+    return {
+      diff,
+      color: colorMap[profits[0].strategy] || colors.greenAccent[600],
+    };
+  }, [strategyKpis, colorMap, colors]);
 
   return (
     <Box m="20px">
@@ -176,8 +197,12 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("profit_total")}
-            subtitle="Total Profit (€)"
+            lines={buildLines("profit_per_m2")}
+            subtitle="Profit per m² (€)"
+            increase={
+              profitDifference ? `+${formatValue(profitDifference.diff)}` : undefined
+            }
+            increaseColor={profitDifference?.color}
             icon={
               <EuroSymbolIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -227,8 +252,8 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("euro_per_gram")}
-            subtitle="Cost Efficiency (€/g)"
+            lines={buildLines("energy_cost_per_profit")}
+            subtitle="Energy Cost per Profit (€/€)"
             icon={
               <SavingsIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
