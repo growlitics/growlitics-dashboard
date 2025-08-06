@@ -82,18 +82,18 @@ const BarChart = ({ energyData = {} }) => {
     let min = Infinity;
     let max = -Infinity;
     chartData.forEach((d) => {
-      const total = (d.base || 0) + (d.diff || 0);
-      if (total < min) min = total;
-      if (total > max) max = total;
+      const dayMin = d.base ?? 0;
+      const dayMax = (d.base ?? 0) + (d.diff ?? 0);
+      if (dayMin < min) min = dayMin;
+      if (dayMax > max) max = dayMax;
     });
     if (min === Infinity) min = 0;
     if (max === -Infinity) max = 0;
     return { minValue: min, maxValue: max };
   }, [chartData]);
 
-  const padding = (maxValue - minValue) * 0.2;
-  const minScale = minValue - padding;
-  const maxScale = maxValue + padding;
+  const maxScale = maxValue > 0 ? maxValue * 1.1 : 0;
+  const minScale = minValue < 0 ? minValue * 1.1 : 0;
 
   const getWeekNumber = (dateStr) => {
     const d = new Date(dateStr);
