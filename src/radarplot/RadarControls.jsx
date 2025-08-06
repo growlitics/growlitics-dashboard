@@ -79,7 +79,8 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
           bonus_penalty += Number(st.bonus_penalty) || 0;
           profit += Number(st.profit) || 0;
           energy_cost += Number(st.energy_cost) || 0;
-          weight_achieved += Number(st.weight_achieved) || 0;
+          const weightVal = st.weight_achieved ?? st.weight ?? st.total_weight;
+          weight_achieved += Number(weightVal) || 0;
           base_revenue_a += Number(st.base_revenue_a) || 0;
           base_revenue_b += Number(st.base_revenue_b) || 0;
           base_revenue +=
