@@ -144,6 +144,7 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
     toggleCultivation,
     allCultivations,
     batches,
+    kpis: baseData.kpis,
   };
 
   return <RadarContext.Provider value={value}>{children}</RadarContext.Provider>;

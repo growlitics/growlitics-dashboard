@@ -1,5 +1,5 @@
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { tokens } from "../../theme";
 import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
@@ -37,6 +37,52 @@ const DashboardContent = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const radar = useRadar();
+
+  const { selectedCultivations = [], visible = {}, kpis = {} } = radar || {};
+
+  const kpiAverages = useMemo(() => {
+    const totals = {
+      euro_per_kwh: 0,
+      kwh_per_gram: 0,
+      euro_per_gram: 0,
+      profit_per_m2: 0,
+    };
+    const counts = {
+      euro_per_kwh: 0,
+      kwh_per_gram: 0,
+      euro_per_gram: 0,
+      profit_per_m2: 0,
+    };
+
+    const strategies = Object.keys(visible || {}).filter((s) => visible[s]);
+
+    selectedCultivations.forEach((cultivation) => {
+      strategies.forEach((strategy) => {
+        const data = kpis ? kpis[`${cultivation}|${strategy}`] : undefined;
+        if (data) {
+          Object.keys(totals).forEach((key) => {
+            const val = Number(data[key]);
+            if (!isNaN(val)) {
+              totals[key] += val;
+              counts[key] += 1;
+            }
+          });
+        }
+      });
+    });
+
+    const averages = {};
+    Object.keys(totals).forEach((key) => {
+      averages[key] =
+        counts[key] > 0
+          ? Math.round((totals[key] / counts[key]) * 1000) / 1000
+          : null;
+    });
+
+    return averages;
+  }, [selectedCultivations, visible, kpis]);
+
+  const formatValue = (val) => (val !== null && val !== undefined ? val.toFixed(3) : "");
 
   return (
     <Box m="20px">
@@ -79,10 +125,8 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title="12,361"
-            subtitle="Emails Sent"
-            progress="0.75"
-            increase="+14%"
+            title={formatValue(kpiAverages.euro_per_kwh)}
+            subtitle="Energy Efficiency"
             icon={
               <EmailIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -98,10 +142,8 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title="431,225"
-            subtitle="Sales Obtained"
-            progress="0.50"
-            increase="+21%"
+            title={formatValue(kpiAverages.kwh_per_gram)}
+            subtitle="Plant Efficiency"
             icon={
               <PointOfSaleIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -117,10 +159,8 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title="32,441"
-            subtitle="New Clients"
-            progress="0.30"
-            increase="+5%"
+            title={formatValue(kpiAverages.euro_per_gram)}
+            subtitle="Cost Efficiency"
             icon={
               <PersonAddIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
@@ -136,10 +176,8 @@ const DashboardContent = () => {
           justifyContent="center"
         >
           <StatBox
-            title="1,325,134"
-            subtitle="Traffic Received"
-            progress="0.80"
-            increase="+43%"
+            title={formatValue(kpiAverages.profit_per_m2)}
+            subtitle="Profit per m²"
             icon={
               <TrafficIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
