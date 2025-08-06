@@ -18,6 +18,54 @@ import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarCon
 const DEFAULT_GIST_ID =
   process.env.REACT_APP_DEFAULT_GIST_ID || "58caf316abf501f85f83f128909cbc4d";
 
+export const fetchGist = async (id) => {
+  try {
+    const res = await fetch(`https://api.github.com/gists/${id}`, {
+      cache: "no-store",
+    });
+    const json = await res.json();
+    const files = json.files || {};
+    const firstFile = Object.values(files)[0];
+    if (firstFile && firstFile.content) {
+      try {
+        return JSON.parse(firstFile.content);
+      } catch (err) {
+        console.error("Failed to parse gist JSON", err);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch gist", err);
+  }
+  return null;
+};
+
+export const resolveDefaultGistId = async () => {
+  try {
+    const res = await fetch(`https://api.github.com/gists/${DEFAULT_GIST_ID}`, {
+      cache: "no-store",
+    });
+    const json = await res.json();
+    const files = json.files || {};
+    const firstFile = Object.values(files)[0];
+    if (firstFile && firstFile.content) {
+      const parsed = JSON.parse(firstFile.content);
+      const id =
+        parsed.default_gist_id ||
+        parsed.gist_id ||
+        parsed.gist ||
+        parsed.id;
+      if (id) {
+        console.log("Resolved default gist ID:", id);
+        return id;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to resolve default gist id", err);
+  }
+  console.log("Using fallback default gist ID:", DEFAULT_GIST_ID);
+  return DEFAULT_GIST_ID;
+};
+
 const normalizeKpiData = (data) => {
   if (!Array.isArray(data)) return data;
 
@@ -413,52 +461,6 @@ const Dashboard = () => {
       if (energy) setEnergyData(energy);
     };
 
-    const fetchGist = async (id) => {
-      try {
-        const res = await fetch(`https://api.github.com/gists/${id}`, {
-          cache: "no-store",
-        });
-        const json = await res.json();
-        const files = json.files || {};
-        const firstFile = Object.values(files)[0];
-        if (firstFile && firstFile.content) {
-          try {
-            const parsed = JSON.parse(firstFile.content);
-            processFetchedData(parsed);
-          } catch (err) {
-            console.error("Failed to parse gist JSON", err);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch gist", err);
-      }
-    };
-
-    const resolveDefaultGistId = async () => {
-      try {
-        const res = await fetch(
-          `https://api.github.com/gists/${DEFAULT_GIST_ID}`,
-          { cache: "no-store" }
-        );
-        const json = await res.json();
-        const files = json.files || {};
-        const firstFile = Object.values(files)[0];
-        if (firstFile && firstFile.content) {
-          const parsed = JSON.parse(firstFile.content);
-          return (
-            parsed.default_gist_id ||
-            parsed.gist_id ||
-            parsed.gist ||
-            parsed.id ||
-            DEFAULT_GIST_ID
-          );
-        }
-      } catch (err) {
-        console.error("Failed to resolve default gist id", err);
-      }
-      return DEFAULT_GIST_ID;
-    };
-
     const init = async () => {
       if (batchesParam) {
         const parsedBatches = batchesParam
@@ -495,7 +497,9 @@ const Dashboard = () => {
       }
       if (!initialGist) return;
 
-      await fetchGist(initialGist);
+      console.log("Loading gist:", initialGist);
+      const fetched = await fetchGist(initialGist);
+      processFetchedData(fetched);
     };
 
     init();
