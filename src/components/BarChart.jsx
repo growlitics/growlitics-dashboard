@@ -9,36 +9,59 @@ const BarChart = ({ energyData = {} }) => {
   const colors = tokens(theme.palette.mode);
   const radar = useRadar();
   const colorMap = radar?.colorMap || {};
+  const { selectedCultivations = [], visible = {} } = radar || {};
 
-  const weeks = useMemo(
-    () => Object.keys(energyData || {}).sort(),
-    [energyData]
-  );
+  const weeks = useMemo(() => {
+    const set = new Set();
+    const cultivations =
+      selectedCultivations.length > 0
+        ? selectedCultivations
+        : Object.keys(energyData || {});
+    cultivations.forEach((c) => {
+      Object.keys(energyData[c] || {}).forEach((w) => set.add(w));
+    });
+    return Array.from(set).sort();
+  }, [energyData, selectedCultivations]);
   const [week, setWeek] = useState(weeks[0] || "");
 
   useEffect(() => {
-    if (!week && weeks.length > 0) setWeek(weeks[0]);
+    if (!weeks.includes(week)) setWeek(weeks[0] || "");
   }, [weeks, week]);
 
   const strategies = useMemo(() => {
-    const weekData = energyData[week] || {};
-    const first = Object.values(weekData)[0] || {};
-    return Object.keys(first);
-  }, [energyData, week]);
+    const set = new Set();
+    (selectedCultivations || []).forEach((c) => {
+      const weekData = energyData[c]?.[week] || {};
+      Object.values(weekData).forEach((vals) => {
+        Object.keys(vals).forEach((s) => {
+          if (visible[s]) set.add(s);
+        });
+      });
+    });
+    return Array.from(set);
+  }, [energyData, week, selectedCultivations, visible]);
 
   const chartData = useMemo(() => {
-    const weekData = energyData[week] || {};
-    return Object.entries(weekData)
-      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
-      .map(([date, vals]) => {
-        const entry = { date };
+    if (!week) return [];
+    const start = new Date(week);
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const entry = { date: dateStr };
+      strategies.forEach((s) => (entry[s] = 0));
+      (selectedCultivations || []).forEach((c) => {
+        const vals = energyData[c]?.[week]?.[dateStr] || {};
         strategies.forEach((s) => {
           const v = Number(vals[s]);
-          entry[s] = isNaN(v) ? 0 : v;
+          if (!isNaN(v)) entry[s] += v;
         });
-        return entry;
       });
-  }, [energyData, week, strategies]);
+      days.push(entry);
+    }
+    return days;
+  }, [energyData, week, strategies, selectedCultivations]);
 
   const maxValue = useMemo(
     () =>
@@ -48,6 +71,14 @@ const BarChart = ({ energyData = {} }) => {
       }, 0),
     [chartData, strategies]
   );
+
+  const getWeekNumber = (dateStr) => {
+    const d = new Date(dateStr);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  };
 
   return (
     <Box height="100%" display="flex" flexDirection="column">
@@ -70,7 +101,7 @@ const BarChart = ({ energyData = {} }) => {
             >
               {weeks.map((w) => (
                 <MenuItem key={w} value={w}>
-                  {`Week ${w}`}
+                  {`Week ${getWeekNumber(w)}`}
                 </MenuItem>
               ))}
             </Select>
@@ -95,9 +126,13 @@ const BarChart = ({ energyData = {} }) => {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: "Date",
+            legend: "Day",
             legendPosition: "middle",
             legendOffset: 32,
+            format: (value) =>
+              new Date(value).toLocaleDateString(undefined, {
+                weekday: "short",
+              }),
           }}
           axisLeft={{
             tickSize: 5,

@@ -37,6 +37,34 @@ const normalizeKpiData = (data) => {
   }, {});
 };
 
+const getWeekStart = (dateStr) => {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return null;
+  const day = d.getDay();
+  const diff = (day + 6) % 7; // Monday as first day
+  d.setDate(d.getDate() - diff);
+  return d.toISOString().slice(0, 10);
+};
+
+const buildEnergyData = (kpis = {}) => {
+  const energy = {};
+  Object.entries(kpis).forEach(([key, data]) => {
+    const [cultivation, strategy] = key.split("|");
+    const daily = data?.daily || [];
+    daily.forEach((entry) => {
+      const { date, total_energy_cost } = entry || {};
+      if (!date) return;
+      const week = getWeekStart(date);
+      if (!week) return;
+      if (!energy[cultivation]) energy[cultivation] = {};
+      if (!energy[cultivation][week]) energy[cultivation][week] = {};
+      if (!energy[cultivation][week][date]) energy[cultivation][week][date] = {};
+      energy[cultivation][week][date][strategy] = Number(total_energy_cost) || 0;
+    });
+  });
+  return energy;
+};
+
 const DashboardContent = ({ energyData }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -346,9 +374,14 @@ const Dashboard = () => {
         dailyEnergyCost,
         ...kpiPayload
       } = parsed;
-      setGistData(normalizeKpiData(kpiPayload));
+      const normalized = normalizeKpiData(kpiPayload);
+      setGistData(normalized);
       const energy =
-        daily_energy_cost || energy_cost_daily || energyField || dailyEnergyCost;
+        daily_energy_cost ||
+        energy_cost_daily ||
+        energyField ||
+        dailyEnergyCost ||
+        buildEnergyData(normalized?.kpis);
       if (energy) setEnergyData(energy);
     };
 
