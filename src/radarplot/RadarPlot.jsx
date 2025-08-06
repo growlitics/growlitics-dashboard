@@ -34,14 +34,14 @@ function renderActiveDot(color, name) {
 
 const KPI_FIELDS = [
   { key: "bonus_penalty", label: "Bonus/Penalty" },
-  { key: "profit", label: "Profit" },
+  { key: "profit_per_m2", label: "Profit per m²" },
   { key: "energy_cost", label: "Energy Cost" },
   { key: "weight_achieved", label: "Weight" },
   { key: "base_revenue", label: "Base Revenue" },
 ];
 
 const KPI_RANGES = {
-  profit: [0, 50],
+  profit_per_m2: [0, 50],
   energy_cost: [0, 8],
   weight_achieved: [0, 100],
   bonus_penalty: [-3, 5],

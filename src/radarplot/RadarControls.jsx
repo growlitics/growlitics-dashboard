@@ -66,7 +66,7 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
     const averaged = Array.from(strategyNames).map((name) => {
       let count = 0;
       let bonus_penalty = 0;
-      let profit = 0;
+      let profit_per_m2 = 0;
       let energy_cost = 0;
       let weight_achieved = 0;
       let base_revenue_a = 0;
@@ -76,7 +76,8 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
         const st = baseData.kpis ? baseData.kpis[`${c}|${name}`] : undefined;
         if (st) {
           bonus_penalty += Number(st.bonus_penalty) || 0;
-          profit += Number(st.profit) || 0;
+          const profitVal = st.profit_per_m2 ?? st.profit;
+          profit_per_m2 += Number(profitVal) || 0;
           energy_cost += Number(st.energy_cost) || 0;
           const weightVal =
             st.weight_achieved ??
@@ -100,7 +101,7 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
       return {
         name,
         bonus_penalty: Math.round((bonus_penalty / denom) * 1000) / 1000,
-        profit: Math.round((profit / denom) * 1000) / 1000,
+        profit_per_m2: Math.round((profit_per_m2 / denom) * 1000) / 1000,
         energy_cost: Math.round((energy_cost / denom) * 1000) / 1000,
         weight_achieved: Math.round((weight_achieved / denom) * 1000) / 1000,
         base_revenue_a: Math.round((base_revenue_a / denom) * 1000) / 1000,
@@ -123,7 +124,8 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
 
   const colorMap = useMemo(() => {
     const sorted = [...strategies].sort(
-      (a, b) => (Number(b.profit) || 0) - (Number(a.profit) || 0)
+      (a, b) =>
+        (Number(b.profit_per_m2) || 0) - (Number(a.profit_per_m2) || 0)
     );
     const map = {};
     sorted.forEach((s, idx) => {
