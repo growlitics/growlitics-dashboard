@@ -14,7 +14,9 @@ import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 
-const DEFAULT_GIST_ID = process.env.REACT_APP_DEFAULT_GIST_ID;
+// Fallback to the public admin gist when no environment variable is provided
+const DEFAULT_GIST_ID =
+  process.env.REACT_APP_DEFAULT_GIST_ID || "58caf316abf501f85f83f128909cbc4d";
 
 const normalizeKpiData = (data) => {
   if (!Array.isArray(data)) return data;
