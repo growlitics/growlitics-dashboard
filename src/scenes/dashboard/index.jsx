@@ -14,6 +14,25 @@ import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 
+const normalizeKpiData = (data) => {
+  if (!Array.isArray(data)) return data;
+
+  return data.reduce((acc, entry) => {
+    if (!entry) return acc;
+    const { cultivation, ...rest } = entry;
+    if (!cultivation) return acc;
+
+    const strategyName = rest.name || rest.strategy;
+    const strategy = { ...rest };
+    if (strategyName) strategy.name = strategyName;
+    delete strategy.strategy;
+
+    if (!acc[cultivation]) acc[cultivation] = [];
+    acc[cultivation].push(strategy);
+    return acc;
+  }, {});
+};
+
 const DashboardContent = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -273,7 +292,7 @@ const Dashboard = () => {
     if (dataParam) {
       try {
         const parsed = JSON.parse(decodeURIComponent(dataParam));
-        setGistData(parsed);
+        setGistData(normalizeKpiData(parsed));
       } catch (err) {
         console.error("Failed to parse data param", err);
       }
@@ -285,7 +304,7 @@ const Dashboard = () => {
         try {
           const res = await fetch(dataUrl);
           const json = await res.json();
-          setGistData(json);
+          setGistData(normalizeKpiData(json));
         } catch (err) {
           console.error("Failed to fetch data_url JSON", err);
         }
@@ -306,7 +325,7 @@ const Dashboard = () => {
         if (firstFile && firstFile.content) {
           try {
             const parsed = JSON.parse(firstFile.content);
-            setGistData(parsed);
+            setGistData(normalizeKpiData(parsed));
           } catch (err) {
             console.error("Failed to parse gist JSON", err);
           }
