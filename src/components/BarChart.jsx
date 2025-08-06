@@ -191,21 +191,25 @@ const BarChart = ({ energyData = {} }) => {
               },
             },
           }}
-          tooltip={({ data }) => (
-            <Box p={1}>
-              <Typography variant="body2">{data.date}</Typography>
-              {strategyKeys.map((key) => {
-                const name = data[`strategy_${key}`];
-                if (!name) return null;
-                const val = Number(data[key] || 0);
-                return (
-                  <Typography key={key} variant="body2">
-                    {name}: {val.toFixed(3)}
-                  </Typography>
-                );
-              })}
-            </Box>
-          )}
+          tooltip={({ data }) => {
+            let cumulative = 0;
+            return (
+              <Box p={1}>
+                <Typography variant="body2">{data.date}</Typography>
+                {strategyKeys.map((key) => {
+                  const name = data[`strategy_${key}`];
+                  if (!name) return null;
+                  const val = Number(data[key] || 0);
+                  cumulative += val;
+                  return (
+                    <Typography key={key} variant="body2">
+                      {name}: {cumulative.toFixed(3)}
+                    </Typography>
+                  );
+                })}
+              </Box>
+            );
+          }}
         />
       </Box>
     </Box>
