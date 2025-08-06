@@ -253,12 +253,22 @@ const DashboardContent = () => {
 
 const Dashboard = () => {
   const [gistData, setGistData] = useState(null);
+  const [batches, setBatches] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const gistId = params.get("gist");
     const dataParam = params.get("data");
     const dataUrl = params.get("data_url");
+    const batchesParam = params.get("batches");
+
+    if (batchesParam) {
+      const parsedBatches = batchesParam
+        .split(",")
+        .map((b) => b.trim())
+        .filter(Boolean);
+      setBatches(parsedBatches);
+    }
 
     if (dataParam) {
       try {
@@ -310,7 +320,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <RadarProvider data={gistData}>
+    <RadarProvider data={gistData} batches={batches}>
       <DashboardContent />
     </RadarProvider>
   );
