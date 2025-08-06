@@ -167,8 +167,8 @@ const DashboardContent = ({ energyData }) => {
             averages[key] = null;
           }
         });
-        averages.energy_cost_per_profit = totals.profit_total
-          ? roundToThree(totals.energy_cost_total / totals.profit_total)
+        averages.profit_per_energy_cost = totals.energy_cost_total
+          ? roundToThree(totals.profit_total / totals.energy_cost_total)
           : null;
         result[strategy] = averages;
       });
@@ -300,8 +300,8 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("energy_cost_per_profit")}
-            subtitle="Energy Cost per Profit (€/€)"
+            lines={buildLines("profit_per_energy_cost")}
+            subtitle="Return on Energy Cost (€/€)"
             icon={
               <SavingsIcon
                 sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
