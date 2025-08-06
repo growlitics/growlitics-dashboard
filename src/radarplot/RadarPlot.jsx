@@ -43,7 +43,7 @@ const KPI_FIELDS = [
 const KPI_RANGES = {
   profit: [0, 50],
   energy_cost: [0, 8],
-  weight_achieved: [20, 100],
+  weight_achieved: [0, 100],
   bonus_penalty: [-3, 5],
   base_revenue: [0, 35],
 };
