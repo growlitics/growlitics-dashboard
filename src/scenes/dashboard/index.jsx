@@ -415,32 +415,15 @@ const Dashboard = () => {
 
     const fetchGist = async (id) => {
       try {
-        const res = await fetch(`https://api.github.com/gists/${id}`);
+        const res = await fetch(`https://api.github.com/gists/${id}`, {
+          cache: "no-store",
+        });
         const json = await res.json();
         const files = json.files || {};
         const firstFile = Object.values(files)[0];
         if (firstFile && firstFile.content) {
           try {
             const parsed = JSON.parse(firstFile.content);
-            // If the fetched gist is a pointer, extract the ID and fetch again
-            if (
-              parsed &&
-              typeof parsed === "object" &&
-              !Array.isArray(parsed) &&
-              !parsed.cultivations &&
-              !parsed.kpis &&
-              !parsed.strategies
-            ) {
-              const nextId =
-                parsed.default_gist_id ||
-                parsed.gist_id ||
-                parsed.gist ||
-                parsed.id;
-              if (nextId) {
-                await fetchGist(nextId);
-                return;
-              }
-            }
             processFetchedData(parsed);
           } catch (err) {
             console.error("Failed to parse gist JSON", err);
@@ -449,6 +432,31 @@ const Dashboard = () => {
       } catch (err) {
         console.error("Failed to fetch gist", err);
       }
+    };
+
+    const resolveDefaultGistId = async () => {
+      try {
+        const res = await fetch(
+          `https://api.github.com/gists/${DEFAULT_GIST_ID}`,
+          { cache: "no-store" }
+        );
+        const json = await res.json();
+        const files = json.files || {};
+        const firstFile = Object.values(files)[0];
+        if (firstFile && firstFile.content) {
+          const parsed = JSON.parse(firstFile.content);
+          return (
+            parsed.default_gist_id ||
+            parsed.gist_id ||
+            parsed.gist ||
+            parsed.id ||
+            DEFAULT_GIST_ID
+          );
+        }
+      } catch (err) {
+        console.error("Failed to resolve default gist id", err);
+      }
+      return DEFAULT_GIST_ID;
     };
 
     const init = async () => {
@@ -481,7 +489,10 @@ const Dashboard = () => {
         return;
       }
 
-      const initialGist = gistIdParam || DEFAULT_GIST_ID;
+      let initialGist = gistIdParam;
+      if (!initialGist) {
+        initialGist = await resolveDefaultGistId();
+      }
       if (!initialGist) return;
 
       await fetchGist(initialGist);
