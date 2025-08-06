@@ -258,6 +258,7 @@ const Dashboard = () => {
     const params = new URLSearchParams(window.location.search);
     const gistId = params.get("gist");
     const dataParam = params.get("data");
+    const dataUrl = params.get("data_url");
 
     if (dataParam) {
       try {
@@ -266,6 +267,21 @@ const Dashboard = () => {
       } catch (err) {
         console.error("Failed to parse data param", err);
       }
+      return;
+    }
+
+    if (dataUrl) {
+      const fetchDataUrl = async () => {
+        try {
+          const res = await fetch(dataUrl);
+          const json = await res.json();
+          setGistData(json);
+        } catch (err) {
+          console.error("Failed to fetch data_url JSON", err);
+        }
+      };
+
+      fetchDataUrl();
       return;
     }
 
