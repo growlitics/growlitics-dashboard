@@ -171,6 +171,7 @@ const BarChart = ({ energyData = {} }) => {
             legend: "€",
             legendPosition: "middle",
             legendOffset: -40,
+            format: (value) => Number(value).toFixed(3),
           }}
           enableLabel={false}
           theme={{
@@ -196,7 +197,7 @@ const BarChart = ({ energyData = {} }) => {
               <Typography variant="body2">{data.date}</Typography>
               {Object.entries(data.values || {}).map(([s, v]) => (
                 <Typography key={s} variant="body2">
-                  {s}: {v}
+                  {s}: {Number(v).toFixed(3)}
                 </Typography>
               ))}
             </Box>

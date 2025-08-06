@@ -8,12 +8,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const round1 = (n) => Math.round(n * 10) / 10;
+const round3 = (n) => Math.round(n * 1000) / 1000;
 
 function renderActiveDot(color, name) {
   return (props) => {
     const { cx, cy, payload } = props;
-    const raw = round1(payload[`${name}-raw`]);
+    const raw = round3(payload[`${name}-raw`]);
     return (
       <g>
         <circle cx={cx} cy={cy} r={4} stroke={color} strokeWidth={2} fill="#fff" />
@@ -88,7 +88,7 @@ const RadarPlot = ({
         const v = Number(s[kpi.key]) || 0;
         const scaled = (v - domainMin) / (domainMax - domainMin);
         entry[s.name] = scaled;
-        entry[`${s.name}-raw`] = round1(v);
+        entry[`${s.name}-raw`] = round3(v);
       });
       return entry;
     });
