@@ -149,7 +149,7 @@ const DashboardContent = ({ energyData }) => {
       .filter(({ value }) => value !== null && value !== undefined);
     if (profits.length < 2) return null;
     profits.sort((a, b) => b.value - a.value);
-    const diff = roundToThree(profits[0].value - profits[1].value);
+    const diff = roundToThree(Math.abs(profits[0].value - profits[1].value));
     return {
       diff,
       color: colorMap[profits[0].strategy] || colors.greenAccent[600],
@@ -197,10 +197,10 @@ const DashboardContent = ({ energyData }) => {
           justifyContent="center"
         >
           <StatBox
-            lines={buildLines("profit_per_m2")}
-            subtitle="Profit per m² (€)"
+            lines={buildLines("profit_total")}
+            subtitle="Total Profit (€)"
             increase={
-              profitDifference ? `+${formatValue(profitDifference.diff)}` : undefined
+              profitDifference ? formatValue(profitDifference.diff) : undefined
             }
             increaseColor={profitDifference?.color}
             icon={
