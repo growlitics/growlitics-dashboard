@@ -77,6 +77,8 @@ const DashboardContent = ({ energyData }) => {
     colorMap = {},
   } = radar || {};
 
+  const roundToThree = (n) => Math.round((n + Number.EPSILON) * 1000) / 1000;
+
   const strategyKpis = useMemo(() => {
     const result = {};
     const strategies = Object.keys(visible || {}).filter((s) => visible[s]);
@@ -105,10 +107,7 @@ const DashboardContent = ({ energyData }) => {
 
       const averages = {};
       Object.keys(totals).forEach((key) => {
-        averages[key] =
-          count > 0
-            ? Math.round((totals[key] / count) * 1000) / 1000
-            : null;
+        averages[key] = count > 0 ? roundToThree(totals[key] / count) : null;
       });
       result[strategy] = averages;
     });
@@ -117,7 +116,7 @@ const DashboardContent = ({ energyData }) => {
   }, [selectedCultivations, visible, kpis]);
 
   const formatValue = (val) =>
-    val !== null && val !== undefined ? val.toFixed(3) : "";
+    val !== null && val !== undefined ? roundToThree(val).toFixed(3) : "";
 
   const buildLines = (key) =>
     Object.entries(strategyKpis)
