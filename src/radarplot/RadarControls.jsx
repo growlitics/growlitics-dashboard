@@ -18,12 +18,12 @@ const RadarContext = createContext();
 
 export const useRadar = () => useContext(RadarContext);
 
-const buildDefaultData = () => {
-  const cultivations = Object.keys(DEFAULT_STRATEGIES);
+const buildData = (raw = DEFAULT_STRATEGIES) => {
+  const cultivations = Object.keys(raw || {});
   const strategiesSet = new Set();
   const kpis = {};
   cultivations.forEach((c) => {
-    (DEFAULT_STRATEGIES[c] || []).forEach((s) => {
+    (raw[c] || []).forEach((s) => {
       strategiesSet.add(s.name);
       kpis[`${c}|${s.name}`] = s;
     });
@@ -37,7 +37,11 @@ const buildDefaultData = () => {
 
 export const RadarProvider = ({ data = {}, children }) => {
   const baseData = useMemo(() => {
-    return data && data.cultivations ? data : buildDefaultData();
+    if (data) {
+      if (data.cultivations) return data;
+      if (Object.keys(data).length) return buildData(data);
+    }
+    return buildData();
   }, [data]);
 
   const allCultivations = baseData.cultivations || [];
