@@ -10,8 +10,12 @@ const BarChart = ({ energyData = {} }) => {
   const radar = useRadar();
   const colorMap = radar?.colorMap || {};
 
-  const weeks = useMemo(() => Object.keys(energyData || {}), [energyData]);
+  const weeks = useMemo(
+    () => Object.keys(energyData || {}).sort(),
+    [energyData]
+  );
   const [week, setWeek] = useState(weeks[0] || "");
+
   useEffect(() => {
     if (!week && weeks.length > 0) setWeek(weeks[0]);
   }, [weeks, week]);
@@ -24,35 +28,25 @@ const BarChart = ({ energyData = {} }) => {
 
   const chartData = useMemo(() => {
     const weekData = energyData[week] || {};
-    if (strategies.length < 2) return [];
-    return Object.entries(weekData).map(([date, vals]) => {
-      const s1 = strategies[0];
-      const s2 = strategies[1];
-      const v1 = Number(vals[s1]) || 0;
-      const v2 = Number(vals[s2]) || 0;
-      const baselineStrategy = v1 <= v2 ? s1 : s2;
-      const diffStrategy = v1 <= v2 ? s2 : s1;
-      const baseline = Math.min(v1, v2);
-      const difference = Math.abs(v1 - v2);
-      return {
-        date,
-        baseline,
-        difference,
-        baselineStrategy,
-        diffStrategy,
-        [s1]: v1,
-        [s2]: v2,
-      };
-    });
+    return Object.entries(weekData)
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .map(([date, vals]) => {
+        const entry = { date };
+        strategies.forEach((s) => {
+          const v = Number(vals[s]);
+          entry[s] = isNaN(v) ? 0 : v;
+        });
+        return entry;
+      });
   }, [energyData, week, strategies]);
 
   const maxValue = useMemo(
     () =>
-      chartData.reduce(
-        (max, d) => Math.max(max, (d.baseline || 0) + (d.difference || 0)),
-        0
-      ),
-    [chartData]
+      chartData.reduce((max, d) => {
+        const total = strategies.reduce((sum, s) => sum + (d[s] || 0), 0);
+        return Math.max(max, total);
+      }, 0),
+    [chartData, strategies]
   );
 
   return (
@@ -86,7 +80,7 @@ const BarChart = ({ energyData = {} }) => {
       <Box flex="1" mt={1}>
         <ResponsiveBar
           data={chartData}
-          keys={["baseline", "difference"]}
+          keys={strategies}
           indexBy="date"
           margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
           padding={0.3}
@@ -94,10 +88,7 @@ const BarChart = ({ energyData = {} }) => {
           maxValue={maxValue || "auto"}
           valueScale={{ type: "linear" }}
           indexScale={{ type: "band", round: true }}
-          colors={({ id, data }) => {
-            const strategy = id === "baseline" ? data.baselineStrategy : data.diffStrategy;
-            return colorMap[strategy] || colors.greenAccent[500];
-          }}
+          colors={({ id }) => colorMap[id] || colors.greenAccent[500]}
           axisTop={null}
           axisRight={null}
           axisBottom={{
