@@ -22,7 +22,7 @@ function renderActiveDot(color, name) {
           y={Number(cy) - 8}
           textAnchor="middle"
           fill={color}
-          fontSize={12}
+          fontSize={14}
           fontWeight="bold"
         >
           {raw}
@@ -65,7 +65,7 @@ const renderAngleTick = (props) => {
       y={yNum + dy}
       textAnchor={isLeft ? "end" : "start"}
       fill="currentColor"
-      fontSize={12}
+      fontSize={14}
     >
       {payload.value}
     </text>
