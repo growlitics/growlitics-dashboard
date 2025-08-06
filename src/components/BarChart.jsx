@@ -49,28 +49,51 @@ const BarChart = ({ energyData = {} }) => {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       const dateStr = d.toISOString().slice(0, 10);
-      const entry = { date: dateStr };
-      strategies.forEach((s) => (entry[s] = 0));
+      const values = {};
+      strategies.forEach((s) => (values[s] = 0));
       (selectedCultivations || []).forEach((c) => {
         const vals = energyData[c]?.[week]?.[dateStr] || {};
         strategies.forEach((s) => {
           const v = Number(vals[s]);
-          if (!isNaN(v)) entry[s] += v;
+          if (!isNaN(v)) values[s] += v;
         });
       });
-      days.push(entry);
+
+      const entries = Object.entries(values);
+      entries.sort((a, b) => a[1] - b[1]);
+      const minPair = entries[0] || [null, 0];
+      const maxPair = entries[entries.length - 1] || minPair;
+      const base = minPair[1];
+      const diff = Math.max(0, maxPair[1] - minPair[1]);
+      days.push({
+        date: dateStr,
+        base,
+        diff,
+        baseStrategy: minPair[0],
+        diffStrategy: maxPair[0],
+        values,
+      });
     }
     return days;
   }, [energyData, week, strategies, selectedCultivations]);
 
-  const maxValue = useMemo(
-    () =>
-      chartData.reduce((max, d) => {
-        const total = strategies.reduce((sum, s) => sum + (d[s] || 0), 0);
-        return Math.max(max, total);
-      }, 0),
-    [chartData, strategies]
-  );
+  const { minValue, maxValue } = useMemo(() => {
+    if (!chartData.length) return { minValue: 0, maxValue: 0 };
+    let min = Infinity;
+    let max = -Infinity;
+    chartData.forEach((d) => {
+      const total = (d.base || 0) + (d.diff || 0);
+      if (total < min) min = total;
+      if (total > max) max = total;
+    });
+    if (min === Infinity) min = 0;
+    if (max === -Infinity) max = 0;
+    return { minValue: min, maxValue: max };
+  }, [chartData]);
+
+  const padding = (maxValue - minValue) * 0.2;
+  const minScale = minValue - padding;
+  const maxScale = maxValue + padding;
 
   const getWeekNumber = (dateStr) => {
     const d = new Date(dateStr);
@@ -111,15 +134,22 @@ const BarChart = ({ energyData = {} }) => {
       <Box flex="1" mt={1}>
         <ResponsiveBar
           data={chartData}
-          keys={strategies}
+          keys={["base", "diff"]}
           indexBy="date"
           margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
           padding={0.3}
           groupMode="stacked"
-          maxValue={maxValue || "auto"}
+          minValue={minScale}
+          maxValue={maxScale}
           valueScale={{ type: "linear" }}
           indexScale={{ type: "band", round: true }}
-          colors={({ id }) => colorMap[id] || colors.greenAccent[500]}
+          colors={({ id, data }) => {
+            if (id === "base")
+              return colorMap[data.baseStrategy] || colors.greenAccent[500];
+            if (id === "diff")
+              return colorMap[data.diffStrategy] || colors.greenAccent[300];
+            return colors.greenAccent[500];
+          }}
           axisTop={null}
           axisRight={null}
           axisBottom={{
@@ -164,9 +194,9 @@ const BarChart = ({ energyData = {} }) => {
           tooltip={({ data }) => (
             <Box p={1}>
               <Typography variant="body2">{data.date}</Typography>
-              {strategies.map((s) => (
+              {Object.entries(data.values || {}).map(([s, v]) => (
                 <Typography key={s} variant="body2">
-                  {s}: {data[s]}
+                  {s}: {v}
                 </Typography>
               ))}
             </Box>
