@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  BarChart as ReBarChart,
+  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -12,19 +12,16 @@ import {
 } from "recharts";
 
 const barColors = {
-  A: "#ff0000",
+  A: "#008000",
   B: "#ffa500",
-  C: "#008000",
+  C: "#ff0000",
   D: "#0000ff",
 };
 
-const ProfitDistribution = ({
-  selectedCultivation,
-  selectedStrategy,
-  data = {},
-}) => {
+const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }) => {
   const [mode, setMode] = useState("count");
 
+  // Guard: only show chart if 1 cultivation and 1 strategy are selected
   if (!selectedCultivation || !selectedStrategy) {
     return (
       <div className="p-4 text-center">
@@ -37,23 +34,20 @@ const ProfitDistribution = ({
 
   const key = `${selectedCultivation}|${selectedStrategy}`;
   const entry = data[key] || {};
-  let distribution = entry.weight_distribution_data || entry.weight_distribution || [];
+  const distObj = entry.distribution;
 
-  if (typeof distribution === "string") {
-    try {
-      distribution = JSON.parse(distribution);
-    } catch (err) {
-      distribution = [];
-    }
-  }
-
-  if (!Array.isArray(distribution) || distribution.length === 0) {
+  if (!distObj || typeof distObj !== "object" || Object.keys(distObj).length === 0) {
     return (
       <div className="p-4 text-center">
         <p className="text-sm">No distribution data available.</p>
       </div>
     );
   }
+
+  // Convert { "65": 100, "70": 200 } → [{ bin: 65, count: 100 }, ...]
+  const distribution = Object.entries(distObj)
+    .map(([bin, count]) => ({ bin: parseInt(bin, 10), count: Number(count) }))
+    .sort((a, b) => a.bin - b.bin);
 
   return (
     <div className="flex flex-col h-full">
@@ -65,29 +59,29 @@ const ProfitDistribution = ({
           onChange={(e) => setMode(e.target.value)}
         >
           <option value="count">Count</option>
-          <option value="revenue">Revenue</option>
+          <option value="revenue" disabled>Revenue (todo)</option>
         </select>
       </div>
+
       <div className="p-4 text-sm flex flex-wrap gap-4">
-        <span>Target: {entry.target_weight}</span>
-        <span>Lower penalty threshold: {entry.lower_cap}</span>
-        <span>Bonus cap: {entry.upper_cap}</span>
+        <span>🎯 Target: {entry.target_weight ?? "?"}g</span>
+        <span>⏬ Lower cap: {entry.lower_cap ?? "?"}g</span>
+        <span>⏫ Bonus cap: {entry.upper_cap ?? "?"}g</span>
       </div>
+
       <div className="flex-1 p-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <ReBarChart data={distribution} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={distribution} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="bin" />
-            <YAxis />
+            <XAxis dataKey="bin" label={{ value: "Weight (g)", position: "insideBottom", dy: 10 }} />
+            <YAxis label={{ value: "Count", angle: -90, dx: -10 }} />
             <Tooltip
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload;
                   return (
-                    <div className="bg-gray-800 p-2 text-sm">
-                      <p className="font-semibold">{label}</p>
-                      <p>Category: {item.category}</p>
-                      <p>Revenue: {item.revenue}</p>
+                    <div className="bg-gray-800 p-2 text-sm text-white rounded">
+                      <p className="font-semibold">{label}g</p>
                       <p>{mode === "count" ? `Count: ${item.count}` : `Revenue: ${item.revenue}`}</p>
                     </div>
                   );
@@ -95,13 +89,13 @@ const ProfitDistribution = ({
                 return null;
               }}
             />
-            <Bar dataKey={mode} isAnimationActive animationDuration={800}>
+            <Bar dataKey={mode} isAnimationActive animationDuration={800} fill="#8884d8">
               <LabelList dataKey={mode} position="top" className="text-xs" />
-              {distribution.map((d, idx) => (
-                <Cell key={`cell-${idx}`} fill={barColors[d.category] || "#8884d8"} />
+              {distribution.map((_, idx) => (
+                <Cell key={`cell-${idx}`} fill="#69b3a2" />
               ))}
             </Bar>
-          </ReBarChart>
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
@@ -109,4 +103,3 @@ const ProfitDistribution = ({
 };
 
 export default ProfitDistribution;
-
