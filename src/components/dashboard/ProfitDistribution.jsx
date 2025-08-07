@@ -37,7 +37,15 @@ const ProfitDistribution = ({
 
   const key = `${selectedCultivation}|${selectedStrategy}`;
   const entry = data[key] || {};
-  const distribution = entry.weight_distribution_data || [];
+  let distribution = entry.weight_distribution_data || entry.weight_distribution || [];
+
+  if (typeof distribution === "string") {
+    try {
+      distribution = JSON.parse(distribution);
+    } catch (err) {
+      distribution = [];
+    }
+  }
 
   if (!Array.isArray(distribution) || distribution.length === 0) {
     return (
