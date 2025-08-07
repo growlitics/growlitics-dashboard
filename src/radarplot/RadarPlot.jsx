@@ -22,7 +22,7 @@ function renderActiveDot(color, name) {
           y={Number(cy) - 8}
           textAnchor="middle"
           fill={color}
-          fontSize={14}
+          fontSize={18}
           fontWeight="bold"
         >
           {raw}
