@@ -8,6 +8,13 @@ describe("generateColorMap", () => {
     expect(map.B).toBe(COLOR_PALETTE[2]);
   });
 
+  it("handles names containing 'optimized'", () => {
+    const map = generateColorMap(["B", "Optimized Plan", "A"]);
+    expect(map["Optimized Plan"]).toBe(COLOR_PALETTE[0]);
+    expect(map.A).toBe(COLOR_PALETTE[1]);
+    expect(map.B).toBe(COLOR_PALETTE[2]);
+  });
+
   it("returns consistent colors regardless of input order", () => {
     const first = generateColorMap(["Alpha", "Beta", "Gamma"]);
     const second = generateColorMap(["Gamma", "Alpha", "Beta"]);

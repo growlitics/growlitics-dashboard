@@ -15,8 +15,8 @@ export const COLOR_PALETTE = [
 
 export const generateColorMap = (names = []) => {
   const filtered = names.filter(Boolean);
-  const optimized = filtered.find(
-    (n) => n.toLowerCase() === "optimized"
+  const optimized = filtered.find((n) =>
+    n.toLowerCase().includes("optimized")
   );
   const palette = COLOR_PALETTE.slice(1);
   const map = {};
