@@ -1,7 +1,6 @@
 import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import EuroSymbolIcon from "@mui/icons-material/EuroSymbol";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
@@ -13,6 +12,7 @@ import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
+import ProfitDistribution from "../../components/dashboard/ProfitDistribution";
 
 // Fallback to the public admin gist when no environment variable is provided
 const DEFAULT_GIST_ID =
@@ -124,6 +124,12 @@ const DashboardContent = ({ energyData }) => {
     kpis = {},
     colorMap = {},
   } = radar || {};
+
+  const activeStrategies = Object.keys(visible || {}).filter((s) => visible[s]);
+  const selectedCultivation =
+    selectedCultivations.length === 1 ? selectedCultivations[0] : null;
+  const selectedStrategy =
+    activeStrategies.length === 1 ? activeStrategies[0] : null;
 
   const roundToThree = (n) => Math.round((n + Number.EPSILON) * 1000) / 1000;
 
@@ -356,50 +362,14 @@ const DashboardContent = ({ energyData }) => {
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
           overflow="auto"
+          display="flex"
+          flexDirection="column"
         >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            borderBottom={`4px solid ${colors.primary[500]}`}
-            colors={colors.grey[100]}
-            p="15px"
-          >
-            <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
-              Recent Transactions
-            </Typography>
-          </Box>
-          {mockTransactions.map((transaction, i) => (
-            <Box
-              key={`${transaction.txId}-${i}`}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              borderBottom={`4px solid ${colors.primary[500]}`}
-              p="15px"
-            >
-              <Box>
-                <Typography
-                  color={colors.greenAccent[500]}
-                  variant="h5"
-                  fontWeight="600"
-                >
-                  {transaction.txId}
-                </Typography>
-                <Typography color={colors.grey[100]}>
-                  {transaction.user}
-                </Typography>
-              </Box>
-              <Box color={colors.grey[100]}>{transaction.date}</Box>
-              <Box
-                backgroundColor={colors.greenAccent[500]}
-                p="5px 10px"
-                borderRadius="4px"
-              >
-                ${transaction.cost}
-              </Box>
-            </Box>
-          ))}
+          <ProfitDistribution
+            selectedCultivation={selectedCultivation}
+            selectedStrategy={selectedStrategy}
+            data={kpis}
+          />
         </Box>
 
         {/* ROW 3 */}
