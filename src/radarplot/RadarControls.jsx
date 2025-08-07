@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const COLOR_PALETTE = [
+export const COLOR_PALETTE = [
   "#FFD700",
   "#2ca02c",
   "#d62728",
@@ -12,6 +12,25 @@ const COLOR_PALETTE = [
   "#7f7f7f",
   "#17becf",
 ];
+
+export const generateColorMap = (names = []) => {
+  const filtered = names.filter(Boolean);
+  const optimized = filtered.find(
+    (n) => n.toLowerCase() === "optimized"
+  );
+  const palette = COLOR_PALETTE.slice(1);
+  const map = {};
+  filtered
+    .filter((n) => n !== optimized)
+    .sort((a, b) => a.localeCompare(b))
+    .forEach((name, idx) => {
+      map[name] = palette[idx % palette.length];
+    });
+  if (optimized) {
+    map[optimized] = COLOR_PALETTE[0];
+  }
+  return map;
+};
 
 const RadarContext = createContext();
 
@@ -122,24 +141,10 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
     });
   }, [strategies]);
 
-  const colorMap = useMemo(() => {
-    const names = strategies.map((s) => s.name).filter(Boolean);
-    const optimized = names.find(
-      (n) => n.toLowerCase() === "optimized"
-    );
-    const palette = COLOR_PALETTE.slice(1);
-    const map = {};
-    names
-      .filter((n) => n !== optimized)
-      .sort((a, b) => a.localeCompare(b))
-      .forEach((name, idx) => {
-        map[name] = palette[idx % palette.length];
-      });
-    if (optimized) {
-      map[optimized] = COLOR_PALETTE[0];
-    }
-    return map;
-  }, [strategies]);
+  const colorMap = useMemo(
+    () => generateColorMap(baseData.strategies),
+    [baseData]
+  );
 
   const toggleCultivation = (name) => {
     setSelectedCultivations((prev) =>
