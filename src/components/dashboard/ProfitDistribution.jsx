@@ -11,25 +11,19 @@ import {
   Cell,
 } from "recharts";
 
-export interface ProfitDistributionProps {
-  selectedCultivation?: string | null;
-  selectedStrategy?: string | null;
-  data?: Record<string, any>;
-}
-
-const barColors: Record<string, string> = {
+const barColors = {
   A: "#ff0000",
   B: "#ffa500",
   C: "#008000",
   D: "#0000ff",
 };
 
-const ProfitDistribution: React.FC<ProfitDistributionProps> = ({
+const ProfitDistribution = ({
   selectedCultivation,
   selectedStrategy,
   data = {},
 }) => {
-  const [mode, setMode] = useState<"count" | "revenue">("count");
+  const [mode, setMode] = useState("count");
 
   if (!selectedCultivation || !selectedStrategy) {
     return (
@@ -60,7 +54,7 @@ const ProfitDistribution: React.FC<ProfitDistributionProps> = ({
         <select
           className="bg-gray-700 text-white text-sm p-1 rounded"
           value={mode}
-          onChange={(e) => setMode(e.target.value as "count" | "revenue")}
+          onChange={(e) => setMode(e.target.value)}
         >
           <option value="count">Count</option>
           <option value="revenue">Revenue</option>
@@ -80,7 +74,7 @@ const ProfitDistribution: React.FC<ProfitDistributionProps> = ({
             <Tooltip
               content={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
-                  const item: any = payload[0].payload;
+                  const item = payload[0].payload;
                   return (
                     <div className="bg-gray-800 p-2 text-sm">
                       <p className="font-semibold">{label}</p>
@@ -95,7 +89,7 @@ const ProfitDistribution: React.FC<ProfitDistributionProps> = ({
             />
             <Bar dataKey={mode} isAnimationActive animationDuration={800}>
               <LabelList dataKey={mode} position="top" className="text-xs" />
-              {distribution.map((d: any, idx: number) => (
+              {distribution.map((d, idx) => (
                 <Cell key={`cell-${idx}`} fill={barColors[d.category] || "#8884d8"} />
               ))}
             </Bar>
