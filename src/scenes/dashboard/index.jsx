@@ -76,6 +76,43 @@ const normalizeKpiData = (data) => {
 
     const strategyName = rest.name || rest.strategy;
     const strategy = { ...rest };
+
+    // Group target-related fields under a dedicated block so they're
+    // consistently available downstream.
+    const resolveWeight = (obj, ...keys) => {
+      for (const k of keys) {
+        if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+      }
+      return undefined;
+    };
+    const targetWeight = resolveWeight(
+      rest,
+      "target_weight",
+      "target",
+      "target_weight_g",
+      "targetWeight"
+    );
+    const lowerCap = resolveWeight(
+      rest,
+      "lower_cap",
+      "lower",
+      "lower_cap_weight",
+      "lowerCap"
+    );
+    const upperCap = resolveWeight(
+      rest,
+      "upper_cap",
+      "bonus_cap",
+      "upper",
+      "upper_cap_weight",
+      "upperCap"
+    );
+    strategy.targets = {
+      target_weight: targetWeight,
+      lower_cap: lowerCap,
+      upper_cap: upperCap,
+    };
+
     if (strategyName) strategy.name = strategyName;
     delete strategy.strategy;
 

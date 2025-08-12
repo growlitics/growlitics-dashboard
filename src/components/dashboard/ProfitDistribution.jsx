@@ -35,6 +35,12 @@ const ProfitDistribution = ({
 
   const resolveWeight = (...keys) => {
     for (const k of keys) {
+      if (
+        entry.targets &&
+        entry.targets[k] !== undefined &&
+        entry.targets[k] !== null
+      )
+        return entry.targets[k];
       if (entry[k] !== undefined && entry[k] !== null) return entry[k];
     }
     return null;
