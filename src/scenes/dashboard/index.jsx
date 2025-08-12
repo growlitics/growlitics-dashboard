@@ -364,7 +364,6 @@ const DashboardContent = ({ energyData }) => {
           overflow="auto"
           display="flex"
           flexDirection="column"
-          height="100%"
         >
           <ProfitDistribution
             selectedCultivation={selectedCultivation}
