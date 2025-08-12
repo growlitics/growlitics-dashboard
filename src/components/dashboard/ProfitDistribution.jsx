@@ -69,8 +69,8 @@ const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }
         <span>⏫ Bonus cap: {entry.upper_cap ?? "?"}g</span>
       </div>
 
-      <div className="flex-1 p-4 h-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="flex-1 p-4">
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={distribution} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="bin" label={{ value: "Weight (g)", position: "insideBottom", dy: 10 }} />
