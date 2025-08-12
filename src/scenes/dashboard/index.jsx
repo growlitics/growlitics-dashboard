@@ -359,11 +359,12 @@ const DashboardContent = ({ energyData }) => {
         </Box>
         <Box
           gridColumn="9 / span 4"
-          gridRow="span 2"
+          gridRow="2 / span 2"
           backgroundColor={colors.primary[400]}
           overflow="auto"
           display="flex"
           flexDirection="column"
+          height="100%"
         >
           <ProfitDistribution
             selectedCultivation={selectedCultivation}
