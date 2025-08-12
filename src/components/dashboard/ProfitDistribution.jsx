@@ -50,7 +50,7 @@ const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }
     .sort((a, b) => a.bin - b.bin);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between border-b border-gray-600 p-4">
         <h2 className="text-lg font-semibold">📊 Profit Distribution by Weight</h2>
         <select
@@ -69,8 +69,8 @@ const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }
         <span>⏫ Bonus cap: {entry.upper_cap ?? "?"}g</span>
       </div>
 
-      <div className="flex-1 p-4">
-        <ResponsiveContainer width="100%" height={300}>
+      <div className="flex-grow p-4 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart data={distribution} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="bin" label={{ value: "Weight (g)", position: "insideBottom", dy: 10 }} />
