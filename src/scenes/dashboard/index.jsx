@@ -358,7 +358,7 @@ const DashboardContent = ({ energyData }) => {
           </Box>
         </Box>
         <Box
-          gridColumn="span 4"
+          gridColumn="9 / span 4"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
           overflow="auto"
@@ -374,6 +374,14 @@ const DashboardContent = ({ energyData }) => {
 
         {/* ROW 3 */}
         <Box
+          gridColumn="span 4"
+          gridRow="span 2"
+          backgroundColor={colors.primary[400]}
+          className="w-full h-full p-4"
+        >
+          <RadarPlot {...radar} />
+        </Box>
+        <Box
           gridColumn="5 / span 4"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
@@ -381,14 +389,6 @@ const DashboardContent = ({ energyData }) => {
           flexDirection="column"
         >
           <BarChart energyData={energyData} />
-        </Box>
-        <Box
-          gridColumn="9 / span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          className="w-full h-full p-4"
-        >
-          <RadarPlot {...radar} />
         </Box>
       </Box>
     </Box>
