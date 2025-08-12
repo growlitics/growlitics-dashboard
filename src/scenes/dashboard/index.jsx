@@ -370,6 +370,7 @@ const DashboardContent = ({ energyData }) => {
             selectedCultivation={selectedCultivation}
             selectedStrategy={selectedStrategy}
             data={kpis}
+            colorMap={colorMap}
           />
         </Box>
 

@@ -8,17 +8,14 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   LabelList,
-  Cell,
 } from "recharts";
 
-const barColors = {
-  A: "#008000",
-  B: "#ffa500",
-  C: "#ff0000",
-  D: "#0000ff",
-};
-
-const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }) => {
+const ProfitDistribution = ({
+  selectedCultivation,
+  selectedStrategy,
+  data = {},
+  colorMap = {},
+}) => {
   const [mode, setMode] = useState("count");
 
   // Guard: only show chart if 1 cultivation and 1 strategy are selected
@@ -35,6 +32,38 @@ const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }
   const key = `${selectedCultivation}|${selectedStrategy}`;
   const entry = data[key] || {};
   const distObj = entry.distribution;
+
+  const resolveWeight = (...keys) => {
+    for (const k of keys) {
+      if (entry[k] !== undefined && entry[k] !== null) return entry[k];
+    }
+    return null;
+  };
+
+  const target = resolveWeight(
+    "target_weight",
+    "target",
+    "target_weight_g",
+    "targetWeight"
+  );
+  const lowerCap = resolveWeight(
+    "lower_cap",
+    "lower",
+    "lower_cap_weight",
+    "lowerCap"
+  );
+  const bonusCap = resolveWeight(
+    "upper_cap",
+    "bonus_cap",
+    "upper",
+    "upper_cap_weight",
+    "upperCap"
+  );
+
+  const formatWeight = (val) =>
+    val !== null && val !== undefined ? `${val}g` : "?g";
+
+  const barColor = colorMap[selectedStrategy] || "#8884d8";
 
   if (!distObj || typeof distObj !== "object" || Object.keys(distObj).length === 0) {
     return (
@@ -64,9 +93,9 @@ const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }
       </div>
 
       <div className="p-4 text-sm flex flex-wrap gap-4">
-        <span>🎯 Target: {entry.target_weight ?? "?"}g</span>
-        <span>⏬ Lower cap: {entry.lower_cap ?? "?"}g</span>
-        <span>⏫ Bonus cap: {entry.upper_cap ?? "?"}g</span>
+        <span>🎯 Target: {formatWeight(target)}</span>
+        <span>⏬ Lower cap: {formatWeight(lowerCap)}</span>
+        <span>⏫ Bonus cap: {formatWeight(bonusCap)}</span>
       </div>
 
       <div className="flex-grow p-4 min-h-0">
@@ -89,11 +118,13 @@ const ProfitDistribution = ({ selectedCultivation, selectedStrategy, data = {} }
                 return null;
               }}
             />
-            <Bar dataKey={mode} isAnimationActive animationDuration={800} fill="#8884d8">
+            <Bar
+              dataKey={mode}
+              isAnimationActive
+              animationDuration={800}
+              fill={barColor}
+            >
               <LabelList dataKey={mode} position="top" className="text-xs" />
-              {distribution.map((_, idx) => (
-                <Cell key={`cell-${idx}`} fill="#69b3a2" />
-              ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
