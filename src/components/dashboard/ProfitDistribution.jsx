@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   LabelList,
+  Legend,
 } from "recharts";
 
 const ProfitDistribution = ({
@@ -45,6 +46,82 @@ const ProfitDistribution = ({
     return null;
   };
 
+  const prepared = selectedStrategies
+    .map((strategy) => {
+      const key = `${selectedCultivation}|${strategy}`;
+      const entry = data[key] || {};
+      const distObj = entry.distribution;
+
+      if (
+        !distObj ||
+        typeof distObj !== "object" ||
+        Object.keys(distObj).length === 0
+      ) {
+        return null;
+      }
+
+      const target = resolveWeight(
+        entry,
+        "target_weight",
+        "target",
+        "target_weight_g",
+        "targetWeight"
+      );
+      const lowerCap = resolveWeight(
+        entry,
+        "lower_cap",
+        "lower",
+        "lower_cap_weight",
+        "lowerCap"
+      );
+      const bonusCap = resolveWeight(
+        entry,
+        "upper_cap",
+        "bonus_cap",
+        "upper",
+        "upper_cap_weight",
+        "upperCap"
+      );
+
+      const distribution = Object.entries(distObj)
+        .map(([bin, count]) => ({
+          bin: parseInt(bin, 10),
+          count: Number(count),
+        }))
+        .sort((a, b) => a.bin - b.bin);
+
+      return {
+        strategy,
+        distribution,
+        target,
+        lowerCap,
+        bonusCap,
+        color: colorMap[strategy] || "#8884d8",
+      };
+    })
+    .filter(Boolean);
+
+  const allBins = Array.from(
+    new Set(prepared.flatMap((p) => p.distribution.map((d) => d.bin)))
+  ).sort((a, b) => a - b);
+
+  if (prepared.length === 0 || allBins.length === 0) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-sm">No distribution data available.</p>
+      </div>
+    );
+  }
+
+  const chartData = allBins.map((bin) => {
+    const item = { bin };
+    prepared.forEach((p) => {
+      const found = p.distribution.find((d) => d.bin === bin);
+      item[p.strategy] = found ? found.count : 0;
+    });
+    return item;
+  });
+
   return (
     <div className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between border-b border-gray-600 p-4">
@@ -60,121 +137,57 @@ const ProfitDistribution = ({
           </option>
         </select>
       </div>
-      <div className="flex flex-row flex-wrap h-full">
-        {selectedStrategies.map((strategy) => {
-          const key = `${selectedCultivation}|${strategy}`;
-          const entry = data[key] || {};
-          const distObj = entry.distribution;
-
-          if (
-            !distObj ||
-            typeof distObj !== "object" ||
-            Object.keys(distObj).length === 0
-          ) {
-            return (
-              <div
-                key={strategy}
-                className="flex flex-col flex-1 min-w-[300px] p-4"
+      <div className="p-4 text-sm flex flex-wrap gap-4">
+        {prepared.map((p) => (
+          <div key={p.strategy} className="flex items-center gap-2">
+            <span
+              className="w-3 h-3 rounded-sm"
+              style={{ backgroundColor: p.color }}
+            ></span>
+            <span className="font-semibold">{p.strategy}</span>
+            <span>🎯 {formatWeight(p.target)}</span>
+            <span>⏬ {formatWeight(p.lowerCap)}</span>
+            <span>⏫ {formatWeight(p.bonusCap)}</span>
+          </div>
+        ))}
+      </div>
+      <div className="flex-grow p-4 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="bin"
+              label={{ value: "Weight (g)", position: "insideBottom", dy: 10 }}
+            />
+            <YAxis
+              label={{
+                value: mode === "count" ? "Count" : "Revenue",
+                angle: -90,
+                dx: -10,
+              }}
+            />
+            <Tooltip />
+            <Legend />
+            {prepared.map((p) => (
+              <Bar
+                key={p.strategy}
+                dataKey={p.strategy}
+                isAnimationActive
+                animationDuration={800}
+                fill={p.color}
               >
-                <h3 className="text-center font-semibold mb-2">{strategy}</h3>
-                <p className="text-sm text-center">No distribution data available.</p>
-              </div>
-            );
-          }
-
-          const target = resolveWeight(
-            entry,
-            "target_weight",
-            "target",
-            "target_weight_g",
-            "targetWeight"
-          );
-          const lowerCap = resolveWeight(
-            entry,
-            "lower_cap",
-            "lower",
-            "lower_cap_weight",
-            "lowerCap"
-          );
-          const bonusCap = resolveWeight(
-            entry,
-            "upper_cap",
-            "bonus_cap",
-            "upper",
-            "upper_cap_weight",
-            "upperCap"
-          );
-
-          const distribution = Object.entries(distObj)
-            .map(([bin, count]) => ({
-              bin: parseInt(bin, 10),
-              count: Number(count),
-            }))
-            .sort((a, b) => a.bin - b.bin);
-
-          const barColor = colorMap[strategy] || "#8884d8";
-
-          return (
-            <div
-              key={strategy}
-              className="flex flex-col flex-1 min-w-[300px] border-r last:border-r-0 border-gray-600"
-            >
-              <h3 className="text-center font-semibold mt-2">{strategy}</h3>
-              <div className="p-4 text-sm flex flex-wrap gap-4">
-                <span>🎯 Target: {formatWeight(target)}</span>
-                <span>⏬ Lower cap: {formatWeight(lowerCap)}</span>
-                <span>⏫ Bonus cap: {formatWeight(bonusCap)}</span>
-              </div>
-              <div className="flex-grow p-4 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={distribution}
-                    margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="bin"
-                      label={{ value: "Weight (g)", position: "insideBottom", dy: 10 }}
-                    />
-                    <YAxis
-                      label={{
-                        value: mode === "count" ? "Count" : "Revenue",
-                        angle: -90,
-                        dx: -10,
-                      }}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          const item = payload[0].payload;
-                          return (
-                            <div className="bg-gray-800 p-2 text-sm text-white rounded">
-                              <p className="font-semibold">{label}g</p>
-                              <p>
-                                {mode === "count"
-                                  ? `Count: ${item.count}`
-                                  : `Revenue: ${item.revenue}`}
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar
-                      dataKey={mode}
-                      isAnimationActive
-                      animationDuration={800}
-                      fill={barColor}
-                    >
-                      <LabelList dataKey={mode} position="top" className="text-xs" />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          );
-        })}
+                <LabelList
+                  dataKey={p.strategy}
+                  position="top"
+                  className="text-xs"
+                />
+              </Bar>
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
