@@ -167,6 +167,20 @@ const DashboardContent = ({ energyData }) => {
     colorMap = {},
   } = radar || {};
 
+  const weeks = useMemo(() => {
+    const set = new Set();
+    selectedCultivations.forEach((c) => {
+      Object.keys(energyData[c] || {}).forEach((w) => set.add(w));
+    });
+    return Array.from(set).sort();
+  }, [energyData, selectedCultivations]);
+
+  const [week, setWeek] = useState(weeks[0] || "");
+
+  useEffect(() => {
+    if (!weeks.includes(week)) setWeek(weeks[0] || "");
+  }, [weeks, week]);
+
   const activeStrategies = Object.keys(visible || {}).filter((s) => visible[s]);
   const selectedCultivation =
     selectedCultivations.length === 1 ? selectedCultivations[0] : null;
@@ -381,34 +395,10 @@ const DashboardContent = ({ energyData }) => {
           gridColumn="span 8"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
+          display="flex"
+          flexDirection="column"
         >
-          <Box
-            mt="25px"
-            p="0 30px"
-            display="flex "
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Box>
-              <Typography
-                variant="h5"
-                fontWeight="600"
-                color={colors.grey[100]}
-              >
-                Revenue Generated
-              </Typography>
-              <Typography
-                variant="h3"
-                fontWeight="bold"
-                color={colors.greenAccent[500]}
-              >
-                $59,342.32
-              </Typography>
-            </Box>
-          </Box>
-          <Box height="250px" m="-20px 0 0 0">
-            <LineChart isDashboard={true} />
-          </Box>
+          <LineChart weeks={weeks} week={week} setWeek={setWeek} />
         </Box>
         <Box
           gridColumn="9 / span 4"
@@ -443,7 +433,7 @@ const DashboardContent = ({ energyData }) => {
           display="flex"
           flexDirection="column"
         >
-          <BarChart energyData={energyData} />
+          <BarChart energyData={energyData} weeks={weeks} week={week} setWeek={setWeek} />
         </Box>
       </Box>
     </Box>

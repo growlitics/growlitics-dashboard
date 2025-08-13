@@ -13,11 +13,11 @@ import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseIcon from "@mui/icons-material/Close";
 import { ResponsiveBar } from "@nivo/bar";
 import { ResponsiveLine } from "@nivo/line";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { tokens } from "../theme";
 import { useRadar } from "../radarplot/RadarControls";
 
-const BarChart = ({ energyData = {} }) => {
+const BarChart = ({ energyData = {}, weeks = [], week, setWeek }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const radar = useRadar();
@@ -31,19 +31,6 @@ const BarChart = ({ energyData = {} }) => {
     selectedCultivations.length > 0
       ? selectedCultivations
       : Object.keys(energyData || {});
-
-  const weeks = useMemo(() => {
-    const set = new Set();
-    cultivations.forEach((c) => {
-      Object.keys(energyData[c] || {}).forEach((w) => set.add(w));
-    });
-    return Array.from(set).sort();
-  }, [energyData, cultivations]);
-  const [week, setWeek] = useState(weeks[0] || "");
-
-  useEffect(() => {
-    if (!weeks.includes(week)) setWeek(weeks[0] || "");
-  }, [weeks, week]);
   const strategies = useMemo(() => {
     const set = new Set();
     cultivations.forEach((c) => {
