@@ -114,15 +114,29 @@ const LineChart = ({ weeks = [], week: externalWeek, setWeek: externalSetWeek })
     });
   }, [week, aggregated, metric]);
 
+  const avgValue = useMemo(() => {
+    if (!days.length) return 0;
+    const sum = days.reduce((acc, d) => acc + d.y, 0);
+    return sum / days.length;
+  }, [days]);
+
   const data = useMemo(() => {
     if (!metric) return [];
+    const metricLabel = metric === "energy" ? "Energy Price" : "Radiation";
+    const avgLine = days.map((d) => ({ x: d.x, y: avgValue }));
     return [
       {
-        id: metric,
+        id: metricLabel,
+        color: colors.greenAccent[500],
         data: days,
       },
+      {
+        id: "Average",
+        color: colors.blueAccent[300],
+        data: avgLine,
+      },
     ];
-  }, [metric, days]);
+  }, [metric, days, avgValue, colors]);
 
   const getWeekNumber = (dateStr) => {
     const d = new Date(dateStr);
@@ -195,6 +209,23 @@ const LineChart = ({ weeks = [], week: externalWeek, setWeek: externalSetWeek })
           pointBorderWidth={2}
           pointBorderColor={{ from: "serieColor" }}
           useMesh={true}
+          legends={[
+            {
+              anchor: "top-right",
+              direction: "row",
+              justify: false,
+              translateX: 0,
+              translateY: -20,
+              itemsSpacing: 10,
+              itemDirection: "left-to-right",
+              itemWidth: 80,
+              itemHeight: 20,
+              itemOpacity: 0.75,
+              symbolSize: 12,
+              symbolShape: "circle",
+              symbolBorderColor: colors.grey[100],
+            },
+          ]}
           theme={{
             axis: {
               domain: { line: { stroke: colors.grey[100] } },
