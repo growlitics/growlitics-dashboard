@@ -2,7 +2,6 @@ import { Box, Button, IconButton, Typography, useTheme } from "@mui/material";
 import { useEffect, useState, useMemo } from "react";
 import { tokens } from "../../theme";
 import SaveIcon from "@mui/icons-material/Save";
-import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import EuroSymbolIcon from "@mui/icons-material/EuroSymbol";
 import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
 import BoltIcon from "@mui/icons-material/Bolt";
@@ -401,13 +400,6 @@ const DashboardContent = ({ energyData }) => {
                 $59,342.32
               </Typography>
             </Box>
-            <Box>
-              <IconButton>
-                <DownloadOutlinedIcon
-                  sx={{ fontSize: "26px", color: colors.greenAccent[500] }}
-                />
-              </IconButton>
-            </Box>
           </Box>
           <Box height="250px" m="-20px 0 0 0">
             <LineChart isDashboard={true} />
@@ -457,8 +449,33 @@ const Dashboard = () => {
   const [gistData, setGistData] = useState(null);
   const [energyData, setEnergyData] = useState({});
   const [batches, setBatches] = useState([]);
+  const [initialSelectedCultivations, setInitialSelectedCultivations] =
+    useState();
+  const [initialVisible, setInitialVisible] = useState();
 
   useEffect(() => {
+    const loaded = localStorage.getItem("loadedReport");
+    if (loaded) {
+      try {
+        const report = JSON.parse(loaded);
+        const { kpis = {}, energyData: eData = {}, selectedCultivations, visible } = report;
+        const cultivations = [
+          ...new Set(Object.keys(kpis).map((k) => k.split("|")[0])),
+        ];
+        const strategies = [
+          ...new Set(Object.keys(kpis).map((k) => k.split("|")[1])),
+        ];
+        setGistData({ cultivations, strategies, kpis });
+        setEnergyData(eData);
+        setInitialSelectedCultivations(selectedCultivations);
+        setInitialVisible(visible);
+        localStorage.removeItem("loadedReport");
+        return;
+      } catch (err) {
+        console.error("Failed to parse loaded report", err);
+      }
+    }
+
     const params = new URLSearchParams(window.location.search);
     const gistIdParam = params.get("gist");
     const dataParam = params.get("data");
@@ -534,7 +551,12 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <RadarProvider data={gistData} batches={batches}>
+    <RadarProvider
+      data={gistData}
+      batches={batches}
+      initialSelectedCultivations={initialSelectedCultivations}
+      initialVisible={initialVisible}
+    >
       <DashboardContent energyData={energyData} />
     </RadarProvider>
   );
