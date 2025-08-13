@@ -137,7 +137,7 @@ const ProfitDistribution = ({
           </option>
         </select>
       </div>
-      <div className="p-4 text-sm flex flex-wrap gap-4">
+      <div className="p-4 text-sm flex flex-wrap gap-4 items-center">
         {prepared.map((p) => (
           <div key={p.strategy} className="flex items-center gap-2">
             <span
@@ -145,17 +145,39 @@ const ProfitDistribution = ({
               style={{ backgroundColor: p.color }}
             ></span>
             <span className="font-semibold">{p.strategy}</span>
-            <span>🎯 {formatWeight(p.target)}</span>
-            <span>⏬ {formatWeight(p.lowerCap)}</span>
-            <span>⏫ {formatWeight(p.bonusCap)}</span>
           </div>
         ))}
+        <div className="flex items-center gap-2">
+          <span
+            title={prepared
+              .map((p) => `${p.strategy}: ${formatWeight(p.target)}`)
+              .join("\n")}
+          >
+            🎯
+          </span>
+          <span
+            title={prepared
+              .map((p) => `${p.strategy}: ${formatWeight(p.lowerCap)}`)
+              .join("\n")}
+          >
+            ⏬
+          </span>
+          <span
+            title={prepared
+              .map((p) => `${p.strategy}: ${formatWeight(p.bonusCap)}`)
+              .join("\n")}
+          >
+            ⏫
+          </span>
+        </div>
       </div>
       <div className="flex-grow p-4 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            barGap={0}
+            barCategoryGap="0%"
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
@@ -168,6 +190,7 @@ const ProfitDistribution = ({
                 angle: -90,
                 dx: -10,
               }}
+              tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)}
             />
             <Tooltip />
             <Legend />
