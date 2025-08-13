@@ -10,6 +10,10 @@ import {
   LabelList,
   Legend,
 } from "recharts";
+import { Box, IconButton, useTheme } from "@mui/material";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import CloseIcon from "@mui/icons-material/Close";
+import { tokens } from "../../theme";
 
 const ProfitDistribution = ({
   selectedCultivation,
@@ -19,6 +23,8 @@ const ProfitDistribution = ({
 }) => {
   const [mode, setMode] = useState("count");
   const [expanded, setExpanded] = useState(false);
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
 
   // Require a single cultivation and at least one strategy
   if (!selectedCultivation || selectedStrategies.length === 0) {
@@ -212,29 +218,40 @@ const ProfitDistribution = ({
     <>
       <ChartContent
         actionButton={
-          <button
-            className="text-gray-300 hover:text-white"
-            onClick={() => setExpanded(true)}
-          >
-            ⛶
-          </button>
+          <IconButton size="small" onClick={() => setExpanded(true)}>
+            <OpenInFullIcon fontSize="inherit" />
+          </IconButton>
         }
       />
       {expanded && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
-          <div className="relative w-11/12 h-5/6 bg-gray-900 p-4">
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          width="100%"
+          height="100%"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          bgcolor="rgba(0,0,0,0.7)"
+          zIndex={1300}
+        >
+          <Box
+            position="relative"
+            width="90%"
+            height="90%"
+            bgcolor={colors.primary[400]}
+            p={2}
+          >
             <ChartContent
               actionButton={
-                <button
-                  className="text-gray-300 hover:text-white"
-                  onClick={() => setExpanded(false)}
-                >
-                  ✕
-                </button>
+                <IconButton size="small" onClick={() => setExpanded(false)}>
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
               }
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
     </>
   );
