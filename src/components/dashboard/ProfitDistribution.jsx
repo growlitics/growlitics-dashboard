@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -8,7 +8,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   LabelList,
-  Legend,
 } from "recharts";
 import { Box, IconButton, useTheme } from "@mui/material";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
@@ -98,6 +97,12 @@ const ProfitDistribution = ({
         .filter((d) => d.count > 0)
         .sort((a, b) => a.bin - b.bin);
 
+      const totalPlants = distribution.reduce((sum, d) => sum + d.count, 0);
+      const baseRevenue = Number(entry.base_revenue) || 0;
+      const bonusPenalty = Number(entry.bonus_penalty) || 0;
+      const effectivePrice =
+        totalPlants > 0 ? (baseRevenue + bonusPenalty) / totalPlants : 0;
+
       return {
         strategy,
         distribution,
@@ -105,6 +110,7 @@ const ProfitDistribution = ({
         lowerCap,
         bonusCap,
         color: colorMap[strategy] || "#8884d8",
+        effectivePrice,
       };
     })
     .filter(Boolean);
@@ -121,14 +127,22 @@ const ProfitDistribution = ({
     );
   }
 
-  const chartData = allBins.map((bin) => {
-    const item = { bin };
-    prepared.forEach((p) => {
-      const found = p.distribution.find((d) => d.bin === bin);
-      item[p.strategy] = found ? found.count : null;
+  const chartData = useMemo(() => {
+    return allBins.map((bin) => {
+      const item = { bin };
+      prepared.forEach((p) => {
+        const found = p.distribution.find((d) => d.bin === bin);
+        const count = found ? found.count : null;
+        item[p.strategy] =
+          count === null
+            ? null
+            : mode === "profit"
+            ? count * p.effectivePrice
+            : count;
+      });
+      return item;
     });
-    return item;
-  });
+  }, [allBins, prepared, mode]);
   const ChartContent = ({ actionButton }) => (
     <div className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between border-b border-gray-600 p-4">
@@ -140,9 +154,7 @@ const ProfitDistribution = ({
             onChange={(e) => setMode(e.target.value)}
           >
             <option value="count">Count</option>
-            <option value="revenue" disabled>
-              Revenue (todo)
-            </option>
+            <option value="profit">Profit</option>
           </select>
           {actionButton}
         </div>
@@ -188,13 +200,23 @@ const ProfitDistribution = ({
               />
               <YAxis
                 label={{
-                  value: mode === "count" ? "Count" : "Revenue",
+                  value: mode === "count" ? "Count" : "Profit (€)",
                   angle: -90,
                   dx: -10,
                 }}
-                tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)}
+                tickFormatter={(v) =>
+                  mode === "count"
+                    ? v >= 1000
+                      ? `${v / 1000}k`
+                      : v
+                    : `€${v.toFixed(2)}`
+                }
               />
-              <Tooltip />
+              <Tooltip
+                formatter={(value) =>
+                  mode === "profit" ? `€${value.toFixed(2)}` : value
+                }
+              />
               {prepared.map((p) => (
                 <Bar
                   key={p.strategy}
@@ -207,6 +229,11 @@ const ProfitDistribution = ({
                     dataKey={p.strategy}
                     position="top"
                     className="text-xs"
+                    formatter={(val) =>
+                      mode === "profit" && val !== null
+                        ? `€${val.toFixed(2)}`
+                        : val
+                    }
                   />
                 </Bar>
               ))}
