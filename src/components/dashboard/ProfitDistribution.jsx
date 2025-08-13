@@ -129,7 +129,6 @@ const ProfitDistribution = ({
     });
     return item;
   });
-  const chartWidth = Math.max(allBins.length * 50, 300);
   const ChartContent = ({ actionButton }) => (
     <div className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between border-b border-gray-600 p-4">
@@ -173,8 +172,8 @@ const ProfitDistribution = ({
           </div>
         </div>
       </div>
-      <div className="flex-grow p-4 min-h-0 overflow-x-auto">
-        <div style={{ minWidth: chartWidth, height: "100%" }}>
+      <div className="flex-grow p-4 min-h-0">
+        <div style={{ width: "100%", height: "100%" }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
