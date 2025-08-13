@@ -21,23 +21,12 @@ const ProfitDistribution = ({
   colorMap = {},
 }) => {
   const [mode, setMode] = useState("count");
-  const [expanded, setExpanded] = useState(false);
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+    const [expanded, setExpanded] = useState(false);
+    const theme = useTheme();
+    const colors = tokens(theme.palette.mode);
 
-  // Require a single cultivation and at least one strategy
-  if (!selectedCultivation || selectedStrategies.length === 0) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-sm">
-          Select a cultivation and at least one strategy to view the profit distribution.
-        </p>
-      </div>
-    );
-  }
-
-  const formatWeight = (val) =>
-    val !== null && val !== undefined ? `${val}g` : "?g";
+    const formatWeight = (val) =>
+      val !== null && val !== undefined ? `${val}g` : "?g";
 
   const resolveWeight = (entry, ...keys) => {
     for (const k of keys) {
@@ -119,15 +108,8 @@ const ProfitDistribution = ({
     new Set(prepared.flatMap((p) => p.distribution.map((d) => d.bin)))
   ).sort((a, b) => a - b);
 
-  if (prepared.length === 0 || allBins.length === 0) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-sm">No distribution data available.</p>
-      </div>
-    );
-  }
-
   const chartData = useMemo(() => {
+    if (prepared.length === 0 || allBins.length === 0) return [];
     return allBins.map((bin) => {
       const item = { bin };
       prepared.forEach((p) => {
@@ -143,6 +125,26 @@ const ProfitDistribution = ({
       return item;
     });
   }, [allBins, prepared, mode]);
+
+  // Require a single cultivation and at least one strategy
+  if (!selectedCultivation || selectedStrategies.length === 0) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-sm">
+          Select a cultivation and at least one strategy to view the profit distribution.
+        </p>
+      </div>
+    );
+  }
+
+  if (prepared.length === 0 || allBins.length === 0) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-sm">No distribution data available.</p>
+      </div>
+    );
+  }
+
   const ChartContent = ({ actionButton }) => (
     <div className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between border-b border-gray-600 p-4">
