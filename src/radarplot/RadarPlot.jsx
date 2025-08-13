@@ -76,6 +76,44 @@ const renderAngleTick = (props) => {
   );
 };
 
+const ProfitBar = ({ strategies = [], visible = {}, colorMap = {} }) => {
+  const min = 0;
+  const max = 30;
+  return (
+    <div className="flex flex-col items-center justify-center h-full w-20 mr-4">
+      <div className="relative w-2 h-5/6 bg-gray-400 rounded">
+        {strategies
+          .filter((s) => visible[s.name])
+          .map((s) => {
+            const raw = Number(s.profit_per_m2) || 0;
+            const value = Math.min(Math.max(raw, min), max);
+            const percent = ((value - min) / (max - min)) * 100;
+            const color = colorMap[s.name] || "#999";
+            return (
+              <div
+                key={s.name}
+                className="absolute flex items-center"
+                style={{
+                  bottom: `${percent}%`,
+                  left: "50%",
+                  transform: "translate(-50%, 50%)",
+                }}
+              >
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: color }}
+                  title={`${s.name}: ${round3(raw)}`}
+                />
+              </div>
+            );
+          })}
+        <div className="absolute -left-6 -bottom-2 text-xs">0</div>
+        <div className="absolute -left-6 -top-2 text-xs">30</div>
+      </div>
+    </div>
+  );
+};
+
 const RadarPlot = ({
   strategies = [],
   visible = {},
@@ -104,41 +142,50 @@ const RadarPlot = ({
 
   const Chart = () => (
     <div className="w-full h-full flex items-center justify-center">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart
-          cx="50%"
-          cy="50%"
-          outerRadius="80%"
-          data={chartData}
-          margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-        >
-          <PolarGrid stroke="currentColor" strokeOpacity={0.2} />
-          <PolarAngleAxis dataKey="metric" tick={renderAngleTick} tickLine={false} />
-          <PolarRadiusAxis
-            tick={false}
-            axisLine={false}
-            tickLine={false}
-            domain={[0, 1]}
-          />
-          {strategies
-            .filter((s) => visible[s.name])
-            .map((s) => {
-              const color = colorMap[s.name];
-              return (
-                <Radar
-                  key={s.name}
-                  name={s.name}
-                  dataKey={s.name}
-                  stroke={color}
-                  fill={color}
-                  fillOpacity={0.4}
-                  dot={{ r: 3, stroke: color, fill: color }}
-                  activeDot={renderActiveDot(color, s.name)}
-                />
-              );
-            })}
-        </RadarChart>
-      </ResponsiveContainer>
+      <div className="flex w-full h-full items-center">
+        <ProfitBar strategies={strategies} visible={visible} colorMap={colorMap} />
+        <div className="flex-1 h-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart
+              cx="50%"
+              cy="50%"
+              outerRadius="80%"
+              data={chartData}
+              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            >
+              <PolarGrid stroke="currentColor" strokeOpacity={0.2} />
+              <PolarAngleAxis
+                dataKey="metric"
+                tick={renderAngleTick}
+                tickLine={false}
+              />
+              <PolarRadiusAxis
+                tick={false}
+                axisLine={false}
+                tickLine={false}
+                domain={[0, 1]}
+              />
+              {strategies
+                .filter((s) => visible[s.name])
+                .map((s) => {
+                  const color = colorMap[s.name];
+                  return (
+                    <Radar
+                      key={s.name}
+                      name={s.name}
+                      dataKey={s.name}
+                      stroke={color}
+                      fill={color}
+                      fillOpacity={0.4}
+                      dot={{ r: 3, stroke: color, fill: color }}
+                      activeDot={renderActiveDot(color, s.name)}
+                    />
+                  );
+                })}
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 
