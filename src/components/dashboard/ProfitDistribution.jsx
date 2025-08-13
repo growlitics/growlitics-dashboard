@@ -147,28 +147,46 @@ const ProfitDistribution = ({
             <span className="font-semibold">{p.strategy}</span>
           </div>
         ))}
-        <div className="flex items-center gap-2">
-          <span
+        <div className="flex items-center gap-4">
+          <div
+            className="flex items-center gap-1"
             title={prepared
               .map((p) => `${p.strategy}: ${formatWeight(p.target)}`)
               .join("\n")}
           >
-            🎯
-          </span>
-          <span
+            <span>🎯</span>
+            <span>
+              {prepared
+                .map((p) => `${p.strategy}: ${formatWeight(p.target)}`)
+                .join(", ")}
+            </span>
+          </div>
+          <div
+            className="flex items-center gap-1"
             title={prepared
               .map((p) => `${p.strategy}: ${formatWeight(p.lowerCap)}`)
               .join("\n")}
           >
-            ⏬
-          </span>
-          <span
+            <span>⏬</span>
+            <span>
+              {prepared
+                .map((p) => `${p.strategy}: ${formatWeight(p.lowerCap)}`)
+                .join(", ")}
+            </span>
+          </div>
+          <div
+            className="flex items-center gap-1"
             title={prepared
               .map((p) => `${p.strategy}: ${formatWeight(p.bonusCap)}`)
               .join("\n")}
           >
-            ⏫
-          </span>
+            <span>⏫</span>
+            <span>
+              {prepared
+                .map((p) => `${p.strategy}: ${formatWeight(p.bonusCap)}`)
+                .join(", ")}
+            </span>
+          </div>
         </div>
       </div>
       <div className="flex-grow p-4 min-h-0">
@@ -176,8 +194,8 @@ const ProfitDistribution = ({
           <BarChart
             data={chartData}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-            barGap={0}
-            barCategoryGap="0%"
+            barGap={4}
+            barCategoryGap="20%"
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
@@ -193,7 +211,6 @@ const ProfitDistribution = ({
               tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)}
             />
             <Tooltip />
-            <Legend />
             {prepared.map((p) => (
               <Bar
                 key={p.strategy}
