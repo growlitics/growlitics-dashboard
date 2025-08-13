@@ -53,7 +53,13 @@ const buildData = (raw = {}) => {
   };
 };
 
-export const RadarProvider = ({ data = {}, batches = [], children }) => {
+export const RadarProvider = ({
+  data = {},
+  batches = [],
+  initialSelectedCultivations,
+  initialVisible,
+  children,
+}) => {
   const baseData = useMemo(() => {
     if (data) {
       if (data.cultivations) return data;
@@ -64,16 +70,19 @@ export const RadarProvider = ({ data = {}, batches = [], children }) => {
 
   const allCultivations = baseData.cultivations || [];
   const defaultCultivations = allCultivations.slice(0, 2);
-  const [selectedCultivations, setSelectedCultivations] = useState(defaultCultivations);
+  const [selectedCultivations, setSelectedCultivations] = useState(
+    initialSelectedCultivations || defaultCultivations
+  );
   const [strategies, setStrategies] = useState([]);
-  const [visible, setVisible] = useState({});
+  const [visible, setVisible] = useState(initialVisible || {});
 
   // Reset selections when incoming data changes
   useEffect(() => {
-    const defaults = (baseData.cultivations || []).slice(0, 2);
+    const defaults =
+      initialSelectedCultivations || (baseData.cultivations || []).slice(0, 2);
     setSelectedCultivations(defaults);
-    setVisible({});
-  }, [baseData]);
+    setVisible(initialVisible || {});
+  }, [baseData, initialSelectedCultivations, initialVisible]);
 
   useEffect(() => {
     const strategyNames = new Set();
