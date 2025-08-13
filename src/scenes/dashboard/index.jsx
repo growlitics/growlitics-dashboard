@@ -136,20 +136,68 @@ const getWeekStart = (dateStr) => {
   return d.toISOString().slice(0, 10);
 };
 
+const normalizeEnergyData = (energy = {}) => {
+  const result = {};
+  Object.entries(energy || {}).forEach(([cultivation, weeks]) => {
+    result[cultivation] = {};
+    Object.entries(weeks || {}).forEach(([week, days]) => {
+      result[cultivation][week] = {};
+      Object.entries(days || {}).forEach(([date, strategies]) => {
+        result[cultivation][week][date] = {};
+        Object.entries(strategies || {}).forEach(([strategy, val]) => {
+          if (typeof val === "number") {
+            result[cultivation][week][date][strategy] = {
+              cost: val,
+              price: null,
+              consumption: null,
+            };
+          } else {
+            const {
+              cost,
+              price,
+              consumption,
+              total_energy_cost,
+              avg_energy_price,
+              total_energy_consumption,
+            } = val || {};
+            result[cultivation][week][date][strategy] = {
+              cost: Number(cost ?? total_energy_cost) || 0,
+              price: Number(price ?? avg_energy_price) || null,
+              consumption: Number(
+                consumption ?? total_energy_consumption
+              ) || null,
+            };
+          }
+        });
+      });
+    });
+  });
+  return result;
+};
+
 const buildEnergyData = (kpis = {}) => {
   const energy = {};
   Object.entries(kpis).forEach(([key, data]) => {
     const [cultivation, strategy] = key.split("|");
     const daily = data?.daily || [];
     daily.forEach((entry) => {
-      const { date, total_energy_cost } = entry || {};
+      const {
+        date,
+        total_energy_cost,
+        avg_energy_price,
+        total_energy_consumption,
+      } = entry || {};
       if (!date) return;
       const week = getWeekStart(date);
       if (!week) return;
       if (!energy[cultivation]) energy[cultivation] = {};
       if (!energy[cultivation][week]) energy[cultivation][week] = {};
       if (!energy[cultivation][week][date]) energy[cultivation][week][date] = {};
-      energy[cultivation][week][date][strategy] = Number(total_energy_cost) || 0;
+      energy[cultivation][week][date][strategy] = {
+        cost: Number(total_energy_cost) || 0,
+        price: Number(avg_energy_price) || null,
+        consumption: Number(total_energy_consumption) || null,
+      };
     });
   });
   return energy;
@@ -463,7 +511,12 @@ const Dashboard = () => {
     if (loaded) {
       try {
         const report = JSON.parse(loaded);
-        const { kpis = {}, energyData: eData = {}, selectedCultivations, visible } = report;
+        const {
+          kpis = {},
+          energyData: eData = {},
+          selectedCultivations,
+          visible,
+        } = report;
         const cultivations = [
           ...new Set(Object.keys(kpis).map((k) => k.split("|")[0])),
         ];
@@ -471,7 +524,7 @@ const Dashboard = () => {
           ...new Set(Object.keys(kpis).map((k) => k.split("|")[1])),
         ];
         setGistData({ cultivations, strategies, kpis });
-        setEnergyData(eData);
+        setEnergyData(normalizeEnergyData(eData));
         setInitialSelectedCultivations(selectedCultivations);
         setInitialVisible(visible);
         localStorage.removeItem("loadedReport");
@@ -502,12 +555,13 @@ const Dashboard = () => {
       } = parsed;
       const normalized = normalizeKpiData(kpiPayload);
       setGistData(normalized);
-      const energy =
+      const energyRaw =
         daily_energy_cost ||
         energy_cost_daily ||
         energyField ||
         dailyEnergyCost ||
         buildEnergyData(normalized?.kpis);
+      const energy = normalizeEnergyData(energyRaw);
       if (energy) setEnergyData(energy);
     };
 
