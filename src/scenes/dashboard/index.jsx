@@ -13,6 +13,8 @@ import StatBox from "../../components/StatBox";
 import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 import ProfitDistribution from "../../components/dashboard/ProfitDistribution";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 // Fallback to the public admin gist when no environment variable is provided
 const DEFAULT_GIST_ID =
@@ -167,6 +169,19 @@ const DashboardContent = ({ energyData }) => {
     selectedCultivations.length === 1 ? selectedCultivations[0] : null;
   const selectedStrategies = activeStrategies;
 
+  const handleDownload = async () => {
+    const dashboard = document.getElementById("dashboard");
+    if (!dashboard) return;
+
+    const canvas = await html2canvas(dashboard);
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save("report.pdf");
+  };
+
   const roundToThree = (n) => Math.round((n + Number.EPSILON) * 1000) / 1000;
 
   const strategyKpis = useMemo(() => {
@@ -247,7 +262,7 @@ const DashboardContent = ({ energyData }) => {
   }, [strategyKpis, colorMap, colors]);
 
   return (
-    <Box m="20px">
+    <Box m="20px" id="dashboard">
       {/* HEADER */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Box display="flex" alignItems="center" gap="20px">
@@ -257,6 +272,7 @@ const DashboardContent = ({ energyData }) => {
 
         <Box>
           <Button
+            onClick={handleDownload}
             sx={{
               backgroundColor: colors.blueAccent[700],
               color: colors.grey[100],
