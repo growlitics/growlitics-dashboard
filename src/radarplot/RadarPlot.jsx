@@ -77,8 +77,14 @@ const renderAngleTick = (props) => {
 };
 
 const ProfitBar = ({ strategies = [], visible = {}, colorMap = {} }) => {
-  const min = 0;
-  const max = 30;
+  const profits = strategies
+    .filter((s) => visible[s.name])
+    .map((s) => Number(s.profit_per_m2) || 0);
+  const rawMin = Math.min(...profits);
+  const rawMax = Math.max(...profits);
+  const min = profits.length ? rawMin - 2 : 0;
+  const max = profits.length ? rawMax + 2 : 2;
+  const range = max - min || 1;
   return (
     <div className="flex flex-col items-center justify-center h-full w-20 mr-4">
       <div className="relative w-2 h-5/6 bg-gray-400 rounded">
@@ -87,7 +93,7 @@ const ProfitBar = ({ strategies = [], visible = {}, colorMap = {} }) => {
           .map((s) => {
             const raw = Number(s.profit_per_m2) || 0;
             const value = Math.min(Math.max(raw, min), max);
-            const percent = ((value - min) / (max - min)) * 100;
+            const percent = ((value - min) / range) * 100;
             const color = colorMap[s.name] || "#999";
             return (
               <div
@@ -107,8 +113,8 @@ const ProfitBar = ({ strategies = [], visible = {}, colorMap = {} }) => {
               </div>
             );
           })}
-        <div className="absolute -left-6 -bottom-2 text-xs">0</div>
-        <div className="absolute -left-6 -top-2 text-xs">30</div>
+        <div className="absolute -left-6 -bottom-2 text-xs">{round3(min)}</div>
+        <div className="absolute -left-6 -top-2 text-xs">{round3(max)}</div>
       </div>
     </div>
   );
