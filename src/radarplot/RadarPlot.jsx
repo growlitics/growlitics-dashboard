@@ -7,6 +7,10 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
 } from "recharts";
+import { Box, IconButton, useTheme } from "@mui/material";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import CloseIcon from "@mui/icons-material/Close";
+import { tokens } from "../theme";
 
 const round3 = (n) => Math.round(n * 1000) / 1000;
 
@@ -81,6 +85,9 @@ const RadarPlot = ({
   toggleCultivation, // unused but accepted via props
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+
   const chartData = useMemo(() => {
     return KPI_FIELDS.map((kpi) => {
       const [domainMin, domainMax] = KPI_RANGES[kpi.key];
@@ -135,29 +142,55 @@ const RadarPlot = ({
     </div>
   );
 
-  return (
-    <div className="relative w-full h-full">
+  const ChartContent = ({ actionButton }) => (
+    <Box position="relative" width="100%" height="100%">
       <Chart />
-      <button
-        className="absolute top-2 right-2 text-gray-300 hover:text-white z-10"
-        onClick={() => setExpanded(true)}
-      >
-        ⛶
-      </button>
+      <Box position="absolute" top={8} right={8} zIndex={10}>
+        {actionButton}
+      </Box>
+    </Box>
+  );
+
+  return (
+    <>
+      <ChartContent
+        actionButton={
+          <IconButton size="small" onClick={() => setExpanded(true)}>
+            <OpenInFullIcon fontSize="inherit" />
+          </IconButton>
+        }
+      />
       {expanded && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
-          <div className="relative w-11/12 h-5/6 bg-gray-900 p-4">
-            <button
-              className="absolute top-2 right-2 text-gray-300 hover:text-white"
-              onClick={() => setExpanded(false)}
-            >
-              ✕
-            </button>
-            <Chart />
-          </div>
-        </div>
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          width="100%"
+          height="100%"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          bgcolor="rgba(0,0,0,0.7)"
+          zIndex={1300}
+        >
+          <Box
+            position="relative"
+            width="90%"
+            height="90%"
+            bgcolor={colors.primary[400]}
+            p={2}
+          >
+            <ChartContent
+              actionButton={
+                <IconButton size="small" onClick={() => setExpanded(false)}>
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              }
+            />
+          </Box>
+        </Box>
       )}
-    </div>
+    </>
   );
 };
 
