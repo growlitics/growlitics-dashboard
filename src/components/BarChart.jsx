@@ -69,26 +69,14 @@ const BarChart = ({ energyData = {} }) => {
       const dateStr = d.toISOString().slice(0, 10);
       const values = {};
       strategies.forEach((s) => (values[s] = 0));
-      let totalCost = 0;
-      let totalConsumption = 0;
       cultivations.forEach((c) => {
         const vals = energyData[c]?.[week]?.[dateStr] || {};
         strategies.forEach((s) => {
-          const entry = vals[s] || {};
-          const cost = Number(entry?.cost);
-          const consumption = Number(entry?.consumption);
-          if (!isNaN(cost)) {
-            values[s] += cost;
-            totalCost += cost;
-          }
-          if (!isNaN(consumption)) {
-            totalConsumption += consumption;
-          }
+          const v = Number(vals[s]);
+          if (!isNaN(v)) values[s] += v;
         });
       });
-      const avgPrice =
-        totalConsumption > 0 ? totalCost / totalConsumption : null;
-      days.push({ date: dateStr, avgPrice, ...values });
+      days.push({ date: dateStr, ...values });
     }
     return days;
   }, [mode, energyData, week, strategies, cultivations]);
@@ -129,32 +117,6 @@ const BarChart = ({ energyData = {} }) => {
 
   const maxScale = maxValue > 0 ? maxValue * 1.1 : 0;
   const minScale = 0;
-
-  const priceLineData = useMemo(() => {
-    if (mode !== "weekly") return [];
-    return [
-      {
-        id: "avg_price",
-        data: rawData.map((d) => ({ x: d.date, y: Number(d.avgPrice) || 0 })),
-      },
-    ];
-  }, [mode, rawData]);
-
-  const [priceMin, priceMax] = useMemo(() => {
-    if (mode !== "weekly") return [0, 0];
-    let min = Infinity;
-    let max = -Infinity;
-    rawData.forEach((d) => {
-      const p = Number(d.avgPrice);
-      if (!isNaN(p)) {
-        if (p < min) min = p;
-        if (p > max) max = p;
-      }
-    });
-    if (min === Infinity || max === -Infinity) return [0, 0];
-    const padding = (max - min) * 0.1 || 0.1;
-    return [Math.max(0, min - padding), max + padding];
-  }, [mode, rawData]);
 
   const getWeekNumber = (dateStr) => {
     const d = new Date(dateStr);
@@ -197,7 +159,7 @@ const BarChart = ({ energyData = {} }) => {
       strategies.forEach((s, idx) => {
         let val = 0;
         cultivations.forEach((c) => {
-          const v = energyData[c]?.[weekStart]?.[date]?.[s]?.cost;
+          const v = energyData[c]?.[weekStart]?.[date]?.[s];
           const num = Number(v);
           if (!isNaN(num)) val += num;
         });
@@ -288,105 +250,67 @@ const BarChart = ({ energyData = {} }) => {
       </Box>
       <Box flex="1" mt={1}>
         {mode === "weekly" ? (
-          <Box position="relative" height="100%">
-            <ResponsiveBar
-              data={chartData}
-              keys={strategyKeys}
-              indexBy="date"
-              margin={{ top: 20, right: 60, bottom: 50, left: 60 }}
-              padding={0.3}
-              groupMode="stacked"
-              minValue={minScale}
-              maxValue={maxScale}
-              valueScale={{ type: "linear" }}
-              indexScale={{ type: "band", round: true }}
-              colors={({ id, data }) =>
-                colorMap[data[`strategy_${id}`]] || colors.greenAccent[500]
-              }
-              axisTop={null}
-              axisRight={null}
-              axisBottom={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: "Day",
-                legendPosition: "middle",
-                legendOffset: 32,
-                format: (value) =>
-                  new Date(value).toLocaleDateString(undefined, {
-                    weekday: "short",
-                  }),
-              }}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: "€",
-                legendPosition: "middle",
-                legendOffset: -40,
-                format: (value) => Number(value).toFixed(1),
-              }}
-              enableLabel={false}
-              theme={chartTheme}
-              enableGridX={false}
-              enableGridY={false}
-              tooltip={({ data }) => {
-                let cumulative = 0;
-                return (
-                  <Box p={1}>
-                    <Typography variant="body2">{data.date}</Typography>
-                    {strategyKeys.map((key) => {
-                      const name = data[`strategy_${key}`];
-                      if (!name) return null;
-                      const val = Number(data[key] || 0);
-                      cumulative += val;
-                      return (
-                        <Typography key={key} variant="body2">
-                          {name}: {cumulative.toFixed(1)}
-                        </Typography>
-                      );
-                    })}
-                  </Box>
-                );
-              }}
-            />
-            {priceLineData.length > 0 && (
-              <Box
-                position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                pointerEvents="none"
-              >
-                <ResponsiveLine
-                  data={priceLineData}
-                  margin={{ top: 20, right: 60, bottom: 50, left: 60 }}
-                  xScale={{ type: "point" }}
-                  yScale={{ type: "linear", min: priceMin, max: priceMax }}
-                  axisTop={null}
-                  axisLeft={null}
-                  axisBottom={null}
-                  axisRight={{
-                    tickSize: 5,
-                    tickPadding: 5,
-                    tickRotation: 0,
-                    legend: "€/kWh",
-                    legendPosition: "middle",
-                    legendOffset: 40,
-                    format: (value) => Number(value).toFixed(2),
-                  }}
-                  colors={[colors.blueAccent[400] || "#00aaff"]}
-                  theme={chartTheme}
-                  enablePoints={false}
-                  useMesh={false}
-                  enableGridX={false}
-                  enableGridY={false}
-                  isInteractive={false}
-                />
-              </Box>
-            )}
-          </Box>
+          <ResponsiveBar
+            data={chartData}
+            keys={strategyKeys}
+            indexBy="date"
+            margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
+            padding={0.3}
+            groupMode="stacked"
+            minValue={minScale}
+            maxValue={maxScale}
+            valueScale={{ type: "linear" }}
+            indexScale={{ type: "band", round: true }}
+            colors={({ id, data }) =>
+              colorMap[data[`strategy_${id}`]] || colors.greenAccent[500]
+            }
+            axisTop={null}
+            axisRight={null}
+            axisBottom={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: "Day",
+              legendPosition: "middle",
+              legendOffset: 32,
+              format: (value) =>
+                new Date(value).toLocaleDateString(undefined, {
+                  weekday: "short",
+                }),
+            }}
+            axisLeft={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: "€",
+              legendPosition: "middle",
+              legendOffset: -40,
+              format: (value) => Number(value).toFixed(1),
+            }}
+            enableLabel={false}
+            theme={chartTheme}
+            enableGridX={false}
+            enableGridY={false}
+            tooltip={({ data }) => {
+              let cumulative = 0;
+              return (
+                <Box p={1}>
+                  <Typography variant="body2">{data.date}</Typography>
+                  {strategyKeys.map((key) => {
+                    const name = data[`strategy_${key}`];
+                    if (!name) return null;
+                    const val = Number(data[key] || 0);
+                    cumulative += val;
+                    return (
+                      <Typography key={key} variant="body2">
+                        {name}: {cumulative.toFixed(1)}
+                      </Typography>
+                    );
+                  })}
+                </Box>
+              );
+            }}
+          />
         ) : (
           <ResponsiveLine
             data={cumulativeData}
