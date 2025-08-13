@@ -95,6 +95,7 @@ const ProfitDistribution = ({
           bin: parseInt(bin, 10),
           count: Number(count),
         }))
+        .filter((d) => d.count > 0)
         .sort((a, b) => a.bin - b.bin);
 
       return {
@@ -124,10 +125,11 @@ const ProfitDistribution = ({
     const item = { bin };
     prepared.forEach((p) => {
       const found = p.distribution.find((d) => d.bin === bin);
-      item[p.strategy] = found ? found.count : 0;
+      item[p.strategy] = found ? found.count : null;
     });
     return item;
   });
+  const chartWidth = Math.max(allBins.length * 50, 300);
   const ChartContent = ({ actionButton }) => (
     <div className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between border-b border-gray-600 p-4">
@@ -171,45 +173,47 @@ const ProfitDistribution = ({
           </div>
         </div>
       </div>
-      <div className="flex-grow p-4 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-            barGap={0}
-            barCategoryGap="0%"
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="bin"
-              label={{ value: "Weight (g)", position: "insideBottom", dy: 10 }}
-            />
-            <YAxis
-              label={{
-                value: mode === "count" ? "Count" : "Revenue",
-                angle: -90,
-                dx: -10,
-              }}
-              tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)}
-            />
-            <Tooltip />
-            {prepared.map((p) => (
-              <Bar
-                key={p.strategy}
-                dataKey={p.strategy}
-                isAnimationActive
-                animationDuration={800}
-                fill={p.color}
-              >
-                <LabelList
+      <div className="flex-grow p-4 min-h-0 overflow-x-auto">
+        <div style={{ minWidth: chartWidth, height: "100%" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+              barGap={0}
+              barCategoryGap="0%"
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="bin"
+                label={{ value: "Weight (g)", position: "insideBottom", dy: 10 }}
+              />
+              <YAxis
+                label={{
+                  value: mode === "count" ? "Count" : "Revenue",
+                  angle: -90,
+                  dx: -10,
+                }}
+                tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)}
+              />
+              <Tooltip />
+              {prepared.map((p) => (
+                <Bar
+                  key={p.strategy}
                   dataKey={p.strategy}
-                  position="top"
-                  className="text-xs"
-                />
-              </Bar>
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+                  isAnimationActive
+                  animationDuration={800}
+                  fill={p.color}
+                >
+                  <LabelList
+                    dataKey={p.strategy}
+                    position="top"
+                    className="text-xs"
+                  />
+                </Bar>
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
