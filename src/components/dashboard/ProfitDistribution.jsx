@@ -148,44 +148,17 @@ const ProfitDistribution = ({
           </div>
         ))}
         <div className="flex items-center gap-4">
-          <div
-            className="flex items-center gap-1"
-            title={prepared
-              .map((p) => `${p.strategy}: ${formatWeight(p.target)}`)
-              .join("\n")}
-          >
+          <div className="flex items-center gap-1">
             <span>🎯</span>
-            <span>
-              {prepared
-                .map((p) => `${p.strategy}: ${formatWeight(p.target)}`)
-                .join(", ")}
-            </span>
+            <span>{formatWeight(prepared[0].target)}</span>
           </div>
-          <div
-            className="flex items-center gap-1"
-            title={prepared
-              .map((p) => `${p.strategy}: ${formatWeight(p.lowerCap)}`)
-              .join("\n")}
-          >
+          <div className="flex items-center gap-1">
             <span>⏬</span>
-            <span>
-              {prepared
-                .map((p) => `${p.strategy}: ${formatWeight(p.lowerCap)}`)
-                .join(", ")}
-            </span>
+            <span>{formatWeight(prepared[0].lowerCap)}</span>
           </div>
-          <div
-            className="flex items-center gap-1"
-            title={prepared
-              .map((p) => `${p.strategy}: ${formatWeight(p.bonusCap)}`)
-              .join("\n")}
-          >
+          <div className="flex items-center gap-1">
             <span>⏫</span>
-            <span>
-              {prepared
-                .map((p) => `${p.strategy}: ${formatWeight(p.bonusCap)}`)
-                .join(", ")}
-            </span>
+            <span>{formatWeight(prepared[0].bonusCap)}</span>
           </div>
         </div>
       </div>
@@ -194,8 +167,8 @@ const ProfitDistribution = ({
           <BarChart
             data={chartData}
             margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-            barGap={4}
-            barCategoryGap="20%"
+            barGap={0}
+            barCategoryGap="0%"
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
