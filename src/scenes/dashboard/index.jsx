@@ -14,8 +14,8 @@ import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 import ProfitDistribution from "../../components/dashboard/ProfitDistribution";
 
-// Gist that contains default.json pointing at the current data gist
-const DEFAULT_GIST_ID =
+// Gist that contains a JSON file pointing at the current default dashboard data
+const DEFAULT_GIST_POINTER =
   process.env.REACT_APP_DEFAULT_GIST_ID || "58caf316abf501f85f83f128909cbc4d";
 
 export const fetchGist = async (id) => {
@@ -42,18 +42,20 @@ export const fetchGist = async (id) => {
 export const resolveDefaultGistId = async () => {
   try {
     const res = await fetch(
-      `https://api.github.com/gists/${DEFAULT_GIST_ID}?${Date.now()}`,
+      `https://api.github.com/gists/${DEFAULT_GIST_POINTER}?${Date.now()}`,
       {
         cache: "no-store",
       }
     );
     const json = await res.json();
     const files = json.files || {};
-    const defaultFile = files["default.json"] || Object.values(files)[0];
+    const defaultFile =
+      files["default.json"] || files["default_dashboard.json"] || Object.values(files)[0];
     if (defaultFile && defaultFile.content) {
       const parsed = JSON.parse(defaultFile.content);
       const id =
         parsed.default_gist_id ||
+        parsed.default_dashboard_gist_id ||
         parsed.gist_id ||
         parsed.gist ||
         parsed.id;
@@ -65,8 +67,8 @@ export const resolveDefaultGistId = async () => {
   } catch (err) {
     console.error("Failed to resolve default gist id", err);
   }
-  console.log("Using fallback default gist ID:", DEFAULT_GIST_ID);
-  return DEFAULT_GIST_ID;
+  console.log("Using fallback default gist ID:", DEFAULT_GIST_POINTER);
+  return DEFAULT_GIST_POINTER;
 };
 
 const normalizeKpiData = (data) => {
