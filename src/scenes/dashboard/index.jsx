@@ -14,13 +14,13 @@ import RadarPlot from "../../radarplot/RadarPlot";
 import RadarControls, { RadarProvider, useRadar } from "../../radarplot/RadarControls";
 import ProfitDistribution from "../../components/dashboard/ProfitDistribution";
 
-// Fallback to the public admin gist when no environment variable is provided
+// Gist that contains default.json pointing at the current data gist
 const DEFAULT_GIST_ID =
   process.env.REACT_APP_DEFAULT_GIST_ID || "58caf316abf501f85f83f128909cbc4d";
 
 export const fetchGist = async (id) => {
   try {
-    const res = await fetch(`https://api.github.com/gists/${id}`, {
+    const res = await fetch(`https://api.github.com/gists/${id}?${Date.now()}`, {
       cache: "no-store",
     });
     const json = await res.json();
@@ -41,14 +41,17 @@ export const fetchGist = async (id) => {
 
 export const resolveDefaultGistId = async () => {
   try {
-    const res = await fetch(`https://api.github.com/gists/${DEFAULT_GIST_ID}`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `https://api.github.com/gists/${DEFAULT_GIST_ID}?${Date.now()}`,
+      {
+        cache: "no-store",
+      }
+    );
     const json = await res.json();
     const files = json.files || {};
-    const firstFile = Object.values(files)[0];
-    if (firstFile && firstFile.content) {
-      const parsed = JSON.parse(firstFile.content);
+    const defaultFile = files["default.json"] || Object.values(files)[0];
+    if (defaultFile && defaultFile.content) {
+      const parsed = JSON.parse(defaultFile.content);
       const id =
         parsed.default_gist_id ||
         parsed.gist_id ||
