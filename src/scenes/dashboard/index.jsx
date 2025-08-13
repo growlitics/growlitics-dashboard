@@ -165,8 +165,7 @@ const DashboardContent = ({ energyData }) => {
   const activeStrategies = Object.keys(visible || {}).filter((s) => visible[s]);
   const selectedCultivation =
     selectedCultivations.length === 1 ? selectedCultivations[0] : null;
-  const selectedStrategy =
-    activeStrategies.length === 1 ? activeStrategies[0] : null;
+  const selectedStrategies = activeStrategies;
 
   const roundToThree = (n) => Math.round((n + Number.EPSILON) * 1000) / 1000;
 
@@ -405,7 +404,7 @@ const DashboardContent = ({ energyData }) => {
         >
           <ProfitDistribution
             selectedCultivation={selectedCultivation}
-            selectedStrategy={selectedStrategy}
+            selectedStrategies={selectedStrategies}
             data={kpis}
             colorMap={colorMap}
           />
