@@ -149,6 +149,7 @@ const BarChart = ({ energyData = {} }) => {
       acc[s] = 0;
       return acc;
     }, {});
+    const start = allDates[0] ? new Date(allDates[0]) : null;
     allDates.forEach((date) => {
       const weekStart = getWeekStart(date);
       strategies.forEach((s, idx) => {
@@ -159,11 +160,28 @@ const BarChart = ({ energyData = {} }) => {
           if (!isNaN(num)) val += num;
         });
         sums[s] += val;
-        lines[idx].data.push({ x: date, y: sums[s] });
+        const day = start
+          ? Math.round((new Date(date) - start) / 86400000)
+          : 0;
+        lines[idx].data.push({ x: day, y: sums[s] });
       });
     });
     return lines;
   }, [mode, strategies, allDates, energyData, cultivations]);
+
+  const maxDay = useMemo(() => {
+    if (mode !== "cumulative" || allDates.length === 0) return 0;
+    const start = new Date(allDates[0]);
+    const end = new Date(allDates[allDates.length - 1]);
+    return Math.round((end - start) / 86400000);
+  }, [mode, allDates]);
+
+  const dayTicks = useMemo(() => {
+    if (mode !== "cumulative") return [];
+    const ticks = [];
+    for (let i = 0; i <= maxDay; i += 15) ticks.push(i);
+    return ticks;
+  }, [mode, maxDay]);
 
   const chartTheme = {
     axis: {
@@ -262,10 +280,12 @@ const BarChart = ({ energyData = {} }) => {
               legend: "€",
               legendPosition: "middle",
               legendOffset: -40,
-              format: (value) => Number(value).toFixed(3),
+              format: (value) => Number(value).toFixed(1),
             }}
             enableLabel={false}
             theme={chartTheme}
+            enableGridX={false}
+            enableGridY={false}
             tooltip={({ data }) => {
               let cumulative = 0;
               return (
@@ -278,7 +298,7 @@ const BarChart = ({ energyData = {} }) => {
                     cumulative += val;
                     return (
                       <Typography key={key} variant="body2">
-                        {name}: {cumulative.toFixed(3)}
+                        {name}: {cumulative.toFixed(1)}
                       </Typography>
                     );
                   })}
@@ -290,7 +310,7 @@ const BarChart = ({ energyData = {} }) => {
           <ResponsiveLine
             data={cumulativeData}
             margin={{ top: 20, right: 30, bottom: 50, left: 60 }}
-            xScale={{ type: "point" }}
+            xScale={{ type: "linear", min: 0, max: maxDay }}
             yScale={{ type: "linear", min: "auto", max: "auto" }}
             axisTop={null}
             axisRight={null}
@@ -301,11 +321,8 @@ const BarChart = ({ energyData = {} }) => {
               legend: "Day",
               legendPosition: "middle",
               legendOffset: 36,
-              format: (value) =>
-                new Date(value).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                }),
+              tickValues: dayTicks,
+              format: (value) => value,
             }}
             axisLeft={{
               tickSize: 5,
@@ -314,17 +331,19 @@ const BarChart = ({ energyData = {} }) => {
               legend: "€",
               legendPosition: "middle",
               legendOffset: -40,
-              format: (value) => Number(value).toFixed(3),
+              format: (value) => Number(value).toFixed(1),
             }}
             colors={({ id }) => colorMap[id] || colors.greenAccent[500]}
             theme={chartTheme}
             enablePoints={false}
             useMesh={true}
+            enableGridX={false}
+            enableGridY={false}
             tooltip={({ point }) => (
               <Box p={1}>
-                <Typography variant="body2">{point.data.x}</Typography>
+                <Typography variant="body2">Day {point.data.x}</Typography>
                 <Typography variant="body2">
-                  {`${point.serieId}: ${Number(point.data.y).toFixed(3)}`}
+                  {`${point.serieId}: ${Number(point.data.y).toFixed(1)}`}
                 </Typography>
               </Box>
             )}
