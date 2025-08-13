@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Radar,
   RadarChart,
@@ -80,6 +80,7 @@ const RadarPlot = ({
   toggleStrategy, // unused but accepted via props
   toggleCultivation, // unused but accepted via props
 }) => {
+  const [expanded, setExpanded] = useState(false);
   const chartData = useMemo(() => {
     return KPI_FIELDS.map((kpi) => {
       const [domainMin, domainMax] = KPI_RANGES[kpi.key];
@@ -94,7 +95,7 @@ const RadarPlot = ({
     });
   }, [strategies]);
 
-  return (
+  const Chart = () => (
     <div className="w-full h-full flex items-center justify-center">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart
@@ -131,6 +132,31 @@ const RadarPlot = ({
             })}
         </RadarChart>
       </ResponsiveContainer>
+    </div>
+  );
+
+  return (
+    <div className="relative w-full h-full">
+      <Chart />
+      <button
+        className="absolute top-2 right-2 text-gray-300 hover:text-white z-10"
+        onClick={() => setExpanded(true)}
+      >
+        ⛶
+      </button>
+      {expanded && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
+          <div className="relative w-11/12 h-5/6 bg-gray-900 p-4">
+            <button
+              className="absolute top-2 right-2 text-gray-300 hover:text-white"
+              onClick={() => setExpanded(false)}
+            >
+              ✕
+            </button>
+            <Chart />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -5,9 +5,12 @@ import {
   Select,
   Typography,
   useTheme,
+  IconButton,
 } from "@mui/material";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import CloseIcon from "@mui/icons-material/Close";
 import { ResponsiveBar } from "@nivo/bar";
 import { ResponsiveLine } from "@nivo/line";
 import { useState, useMemo, useEffect } from "react";
@@ -22,6 +25,7 @@ const BarChart = ({ energyData = {} }) => {
   const { selectedCultivations = [], visible = {} } = radar || {};
 
   const [mode, setMode] = useState("weekly");
+  const [expanded, setExpanded] = useState(false);
 
   const cultivations =
     selectedCultivations.length > 0
@@ -202,7 +206,7 @@ const BarChart = ({ energyData = {} }) => {
     },
   };
 
-  return (
+  const ChartContent = ({ actionButton }) => (
     <Box height="100%" display="flex" flexDirection="column">
       <Box
         display="flex"
@@ -241,6 +245,7 @@ const BarChart = ({ energyData = {} }) => {
               </Select>
             </FormControl>
           )}
+          {actionButton}
         </Box>
       </Box>
       <Box flex="1" mt={1}>
@@ -351,6 +356,42 @@ const BarChart = ({ energyData = {} }) => {
         )}
       </Box>
     </Box>
+  );
+
+  return (
+    <>
+      <ChartContent
+        actionButton={
+          <IconButton size="small" onClick={() => setExpanded(true)}>
+            <OpenInFullIcon fontSize="inherit" />
+          </IconButton>
+        }
+      />
+      {expanded && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          width="100%"
+          height="100%"
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          bgcolor="rgba(0,0,0,0.7)"
+          zIndex={1300}
+        >
+          <Box position="relative" width="90%" height="90%" bgcolor={colors.primary[400]} p={2}>
+            <ChartContent
+              actionButton={
+                <IconButton size="small" onClick={() => setExpanded(false)}>
+                  <CloseIcon fontSize="inherit" />
+                </IconButton>
+              }
+            />
+          </Box>
+        </Box>
+      )}
+    </>
   );
 };
 
