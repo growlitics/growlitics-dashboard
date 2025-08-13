@@ -18,6 +18,7 @@ const ProfitDistribution = ({
   colorMap = {},
 }) => {
   const [mode, setMode] = useState("count");
+  const [expanded, setExpanded] = useState(false);
 
   // Require a single cultivation and at least one strategy
   if (!selectedCultivation || selectedStrategies.length === 0) {
@@ -121,21 +122,23 @@ const ProfitDistribution = ({
     });
     return item;
   });
-
-  return (
+  const ChartContent = ({ actionButton }) => (
     <div className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between border-b border-gray-600 p-4">
         <h2 className="text-lg font-semibold">Profit Distribution by Weight</h2>
-        <select
-          className="bg-gray-700 text-white text-sm p-1 rounded"
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-        >
-          <option value="count">Count</option>
-          <option value="revenue" disabled>
-            Revenue (todo)
-          </option>
-        </select>
+        <div className="flex items-center gap-2">
+          <select
+            className="bg-gray-700 text-white text-sm p-1 rounded"
+            value={mode}
+            onChange={(e) => setMode(e.target.value)}
+          >
+            <option value="count">Count</option>
+            <option value="revenue" disabled>
+              Revenue (todo)
+            </option>
+          </select>
+          {actionButton}
+        </div>
       </div>
       <div className="p-4 text-sm flex flex-wrap gap-4 items-center">
         {prepared.map((p) => (
@@ -203,6 +206,37 @@ const ProfitDistribution = ({
         </ResponsiveContainer>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      <ChartContent
+        actionButton={
+          <button
+            className="text-gray-300 hover:text-white"
+            onClick={() => setExpanded(true)}
+          >
+            ⛶
+          </button>
+        }
+      />
+      {expanded && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
+          <div className="relative w-11/12 h-5/6 bg-gray-900 p-4">
+            <ChartContent
+              actionButton={
+                <button
+                  className="text-gray-300 hover:text-white"
+                  onClick={() => setExpanded(false)}
+                >
+                  ✕
+                </button>
+              }
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
