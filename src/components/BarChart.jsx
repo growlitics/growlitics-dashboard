@@ -272,7 +272,8 @@ const BarChart = ({ energyData = {}, weeks = [], week, setWeek }) => {
               legend: "€",
               legendPosition: "middle",
               legendOffset: -40,
-              format: (value) => Number(value).toFixed(1),
+              format: (value) => Number(value).toFixed(2),
+              tickValues: 5,
             }}
             enableLabel={false}
             theme={chartTheme}
@@ -323,7 +324,8 @@ const BarChart = ({ energyData = {}, weeks = [], week, setWeek }) => {
               legend: "€",
               legendPosition: "middle",
               legendOffset: -40,
-              format: (value) => Number(value).toFixed(1),
+              format: (value) => Number(value).toFixed(2),
+              tickValues: 5,
             }}
             colors={({ id }) => colorMap[id] || colors.greenAccent[500]}
             theme={chartTheme}

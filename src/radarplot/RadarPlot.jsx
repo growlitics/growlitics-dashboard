@@ -26,7 +26,7 @@ function renderActiveDot(color, name) {
           y={Number(cy) - 8}
           textAnchor="middle"
           fill={color}
-          fontSize={18}
+          fontSize={22}
           fontWeight="bold"
         >
           {raw}
@@ -69,7 +69,7 @@ const renderAngleTick = (props) => {
       y={yNum + dy}
       textAnchor={isLeft ? "end" : "start"}
       fill="currentColor"
-      fontSize={14}
+      fontSize={18}
     >
       {payload.value}
     </text>
@@ -108,13 +108,13 @@ const ProfitBar = ({ strategies = [], visible = {}, colorMap = {} }) => {
                 <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: color }}
-                  title={`${s.name}: ${round3(raw)}`}
+                  title={`${s.name}: ${Math.round(raw)}`}
                 />
               </div>
             );
           })}
-        <div className="absolute -left-6 -bottom-2 text-xs">{round3(min)}</div>
-        <div className="absolute -left-6 -top-2 text-xs">{round3(max)}</div>
+        <div className="absolute -left-6 -bottom-2 text-sm">{Math.round(min)}</div>
+        <div className="absolute -left-6 -top-2 text-sm">{Math.round(max)}</div>
       </div>
     </div>
   );
