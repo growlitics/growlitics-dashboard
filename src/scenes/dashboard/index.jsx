@@ -392,29 +392,13 @@ const DashboardContent = ({ energyData }) => {
 
         {/* ROW 2 */}
         <Box
-          gridColumn="span 8"
+          gridColumn="span 12"
           gridRow="span 2"
           backgroundColor={colors.primary[400]}
           display="flex"
           flexDirection="column"
         >
           <LineChart weeks={weeks} week={week} setWeek={setWeek} />
-        </Box>
-        <Box
-          gridColumn="9 / span 4"
-          gridRow="2 / span 2"
-          backgroundColor={colors.primary[400]}
-          overflow="auto"
-          display="flex"
-          flexDirection="column"
-          height="100%"
-        >
-          <ProfitDistribution
-            selectedCultivation={selectedCultivation}
-            selectedStrategies={selectedStrategies}
-            data={kpis}
-            colorMap={colorMap}
-          />
         </Box>
 
         {/* ROW 3 */}
@@ -434,6 +418,22 @@ const DashboardContent = ({ energyData }) => {
           flexDirection="column"
         >
           <BarChart energyData={energyData} weeks={weeks} week={week} setWeek={setWeek} />
+        </Box>
+        <Box
+          gridColumn="9 / span 4"
+          gridRow="span 2"
+          backgroundColor={colors.primary[400]}
+          overflow="auto"
+          display="flex"
+          flexDirection="column"
+          height="100%"
+        >
+          <ProfitDistribution
+            selectedCultivation={selectedCultivation}
+            selectedStrategies={selectedStrategies}
+            data={kpis}
+            colorMap={colorMap}
+          />
         </Box>
       </Box>
     </Box>
