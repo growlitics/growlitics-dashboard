@@ -19,7 +19,7 @@ const LineChart = ({ weeks = [], week: externalWeek, setWeek: externalSetWeek })
   const colors = tokens(theme.palette.mode);
   const radar = useRadar();
   const { selectedCultivations = [], visible = {}, kpis = {} } = radar || {};
-  const [metric, setMetric] = useState("energy");
+  const [metrics, setMetrics] = useState(["energy"]);
   const [internalWeek, setInternalWeek] = useState(weeks[0] || "");
   const [expanded, setExpanded] = useState(false);
 
@@ -99,44 +99,38 @@ const LineChart = ({ weeks = [], week: externalWeek, setWeek: externalSetWeek })
     return averages;
   }, [selectedCultivations, activeStrategies, kpis]);
 
-  const days = useMemo(() => {
+  const dayLabels = useMemo(() => {
     if (!week) return [];
     const start = new Date(week);
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
-      const dateStr = d.toISOString().slice(0, 10);
-      const val = aggregated[dateStr]?.[metric] || 0;
       return {
         x: d.toLocaleDateString("en-US", { weekday: "short" }),
-        y: val,
+        dateStr: d.toISOString().slice(0, 10),
       };
     });
-  }, [week, aggregated, metric]);
+  }, [week]);
 
-  const avgValue = useMemo(() => {
-    if (!days.length) return 0;
-    const sum = days.reduce((acc, d) => acc + d.y, 0);
-    return sum / days.length;
-  }, [days]);
+  const metricLabels = {
+    energy: "Energy Price",
+    radiation: "Radiation",
+  };
+  const metricColors = {
+    energy: colors.greenAccent[500],
+    radiation: colors.blueAccent[300],
+  };
 
   const data = useMemo(() => {
-    if (!metric) return [];
-    const metricLabel = metric === "energy" ? "Energy Price" : "Radiation";
-    const avgLine = days.map((d) => ({ x: d.x, y: avgValue }));
-    return [
-      {
-        id: metricLabel,
-        color: colors.greenAccent[500],
-        data: days,
-      },
-      {
-        id: "Average",
-        color: colors.blueAccent[300],
-        data: avgLine,
-      },
-    ];
-  }, [metric, days, avgValue, colors]);
+    return metrics.map((m) => ({
+      id: metricLabels[m] || m,
+      color: metricColors[m] || colors.greenAccent[500],
+      data: dayLabels.map(({ x, dateStr }) => ({
+        x,
+        y: aggregated[dateStr]?.[m] || 0,
+      })),
+    }));
+  }, [metrics, dayLabels, aggregated, metricLabels, metricColors, colors]);
 
   const getWeekNumber = (dateStr) => {
     const d = new Date(dateStr);
@@ -155,13 +149,23 @@ const LineChart = ({ weeks = [], week: externalWeek, setWeek: externalSetWeek })
         pt={2}
       >
         <Typography variant="h5" fontWeight="600" color={colors.grey[100]}>
-          {metric === "energy" ? "Energy Price" : "Radiation"}
+          {metrics.map((m) => metricLabels[m]).join(", ")}
         </Typography>
         <Box display="flex" alignItems="center" gap={1}>
           <FormControl size="small">
             <Select
-              value={metric}
-              onChange={(e) => setMetric(e.target.value)}
+              multiple
+              value={metrics}
+              onChange={(e) =>
+                setMetrics(
+                  typeof e.target.value === "string"
+                    ? e.target.value.split(",")
+                    : e.target.value
+                )
+              }
+              renderValue={(selected) =>
+                selected.map((m) => metricLabels[m]).join(", ")
+              }
               MenuProps={{ disableScrollLock: true }}
             >
               <MenuItem value="energy">Energy Price</MenuItem>
