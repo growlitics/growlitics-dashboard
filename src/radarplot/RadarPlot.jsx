@@ -43,13 +43,14 @@ const KPI_FIELDS = [
   { key: "weight_achieved", label: "Weight" },
   { key: "base_revenue", label: "Base Revenue" },
 ];
-
-const KPI_RANGES = {
-  profit_per_m2: [0, 50],
-  energy_cost: [0, 8],
-  weight_achieved: [0, 100],
-  bonus_penalty: [-3, 5],
-  base_revenue: [0, 35],
+// Amount to extend the min/max range for each KPI so the radar chart
+// spreads out the strategies and highlights differences.
+const KPI_OFFSETS = {
+  profit_per_m2: 2,
+  energy_cost: 1,
+  weight_achieved: 5,
+  bonus_penalty: 1,
+  base_revenue: 2,
 };
 
 const renderAngleTick = (props) => {
@@ -132,19 +133,37 @@ const RadarPlot = ({
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  // Determine the min and max for each KPI based on the incoming strategies.
+  const kpiRanges = useMemo(() => {
+    const ranges = {};
+    KPI_FIELDS.forEach(({ key }) => {
+      const values = strategies.map((s) => Number(s[key]) || 0);
+      const offset = KPI_OFFSETS[key] || 0;
+      if (values.length) {
+        const min = Math.min(...values) - offset;
+        const max = Math.max(...values) + offset;
+        ranges[key] = [min, max];
+      } else {
+        ranges[key] = [0, 1];
+      }
+    });
+    return ranges;
+  }, [strategies]);
+
   const chartData = useMemo(() => {
     return KPI_FIELDS.map((kpi) => {
-      const [domainMin, domainMax] = KPI_RANGES[kpi.key];
+      const [domainMin, domainMax] = kpiRanges[kpi.key];
       const entry = { metric: kpi.label };
       strategies.forEach((s) => {
         const v = Number(s[kpi.key]) || 0;
-        const scaled = (v - domainMin) / (domainMax - domainMin);
+        const range = domainMax - domainMin || 1;
+        const scaled = (v - domainMin) / range;
         entry[s.name] = scaled;
         entry[`${s.name}-raw`] = round3(v);
       });
       return entry;
     });
-  }, [strategies]);
+  }, [strategies, kpiRanges]);
 
   const Chart = () => (
     <div className="w-full h-full flex items-center justify-center">
